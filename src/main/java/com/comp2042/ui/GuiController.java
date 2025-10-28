@@ -32,6 +32,10 @@ import com.comp2042.game.data.ViewData;
 import com.comp2042.game.data.DownData;
 import com.comp2042.game.data.ClearRow;
 
+//imports for the bindScore method:
+import javafx.beans.binding.Bindings;
+import javafx.scene.control.Label;
+
 public class GuiController implements Initializable {
 
     private static final int BRICK_SIZE = 20;
@@ -47,6 +51,9 @@ public class GuiController implements Initializable {
 
     @FXML
     private GameOverPanel gameOverPanel;
+
+    @FXML
+    private Label scoreLabel;
 
     private Rectangle[][] displayMatrix;
 
@@ -210,6 +217,14 @@ public class GuiController implements Initializable {
     }
 
     public void bindScore(IntegerProperty integerProperty) {
+        if (scoreLabel != null) {
+            scoreLabel.textProperty().bind(
+                Bindings.createStringBinding(
+                    () -> "Score: " + integerProperty.getValue(),
+                    integerProperty
+                )
+            );
+        }
     }
 
     public void gameOver() {

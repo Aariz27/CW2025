@@ -88,7 +88,7 @@ public class SimpleBoard implements Board {
     }
 
     @Override
-    public boolean createNewBrick() {
+    public boolean trySpawnNewBrick() {
         Brick currentBrick = brickGenerator.getBrick();
         brickRotator.setBrick(currentBrick);
         currentOffset = new Point(4, 10);
@@ -128,6 +128,6 @@ public class SimpleBoard implements Board {
     public void newGame() {
         currentGameMatrix = new int[width][height];
         score.reset();
-        createNewBrick();
+        trySpawnNewBrick();
     }
 }
