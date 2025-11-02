@@ -7,18 +7,18 @@ import com.comp2042.game.data.DownData;
 import com.comp2042.game.data.ViewData;
 import com.comp2042.game.data.ClearRow;
 import com.comp2042.game.board.Board;
-import com.comp2042.game.board.SimpleBoard;
 import com.comp2042.ui.GuiController;
 
 public class GameController implements InputEventListener {
 
-    private Board board = new SimpleBoard(25, 10);
-
     private final GuiController viewGuiController;
 
-    public GameController(GuiController c) {
+    private final Board board;
+
+    public GameController(GuiController c, Board board) {
+        this.board = board;
         viewGuiController = c;
-        board.createNewBrick();
+        board.trySpawnNewBrick();
         viewGuiController.setEventListener(this);
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
         viewGuiController.bindScore(board.getScore().scoreProperty());
@@ -34,7 +34,7 @@ public class GameController implements InputEventListener {
             if (clearRow.getLinesRemoved() > 0) {
                 board.getScore().add(clearRow.getScoreBonus());
             }
-            if (board.createNewBrick()) {
+            if (board.trySpawnNewBrick()) {
                 viewGuiController.gameOver();
             }
 

@@ -10,6 +10,9 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 import com.comp2042.ui.GuiController;
+import com.comp2042.game.board.Board;
+
+import com.comp2042.game.board.SimpleBoard;
 import com.comp2042.game.controller.GameController;
 
 public class Main extends Application {
@@ -27,7 +30,9 @@ public class Main extends Application {
         Scene scene = new Scene(root, 300, 510);
         primaryStage.setScene(scene);
         primaryStage.show();
-        new GameController(c);
+
+        Board board = new SimpleBoard(25, 10);
+        new GameController(c, board);
     }
 
     public static void main(String[] args) {

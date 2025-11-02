@@ -2,7 +2,7 @@ package com.comp2042.game.board;
 
 import com.comp2042.game.bricks.Brick;
 import com.comp2042.game.bricks.BrickGenerator;
-import com.comp2042.game.bricks.RandomBrickGenerator;
+import com.comp2042.game.bricks.BrickGeneratorFactory;
 import com.comp2042.game.operations.BrickRotator;
 import com.comp2042.game.operations.MatrixOperations;
 import com.comp2042.game.data.ViewData;
@@ -26,7 +26,7 @@ public class SimpleBoard implements Board {
         this.width = width;
         this.height = height;
         currentGameMatrix = new int[width][height];
-        brickGenerator = new RandomBrickGenerator();
+        brickGenerator = BrickGeneratorFactory.createDefault();
         brickRotator = new BrickRotator();
         score = new Score();
     }
@@ -88,7 +88,7 @@ public class SimpleBoard implements Board {
     }
 
     @Override
-    public boolean createNewBrick() {
+    public boolean trySpawnNewBrick() {
         Brick currentBrick = brickGenerator.getBrick();
         brickRotator.setBrick(currentBrick);
         currentOffset = new Point(4, 10);
@@ -128,6 +128,6 @@ public class SimpleBoard implements Board {
     public void newGame() {
         currentGameMatrix = new int[width][height];
         score.reset();
-        createNewBrick();
+        trySpawnNewBrick();
     }
 }
