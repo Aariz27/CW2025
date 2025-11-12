@@ -1,7 +1,7 @@
 package com.comp2042.game.events;
 
-import com.comp2042.game.events.EventType;
-import com.comp2042.game.events.EventSource;
+// import com.comp2042.game.events.EventType;
+// import com.comp2042.game.events.EventSource;
 
 public final class MoveEvent {
     private final EventType eventType;
