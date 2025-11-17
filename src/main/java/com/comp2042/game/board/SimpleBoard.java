@@ -12,16 +12,29 @@ import com.comp2042.game.score.Score;
 
 import java.awt.*;
 
+/**
+ * Concrete board implementation.
+ * Uses Factory pattern for brick generation and implements Board interface
+ * to allow different board implementations through polymorphism.
+ */
 public class SimpleBoard implements Board {
 
     private final int width;
     private final int height;
-    private final BrickGenerator brickGenerator;
+    private final BrickGenerator brickGenerator; // Depends on interface, not concrete class
     private final BrickRotator brickRotator;
     private int[][] currentGameMatrix;
     private Point currentOffset;
     private final Score score;
 
+    /**
+     * Creates a new SimpleBoard with the specified dimensions.
+     * Uses Factory pattern to create brick generator - generator is created
+     * through factory rather than directly instantiated, following Dependency Inversion.
+     * 
+     * @param width the board width
+     * @param height the board height
+     */
     public SimpleBoard(int width, int height) {
         this.width = width;
         this.height = height;

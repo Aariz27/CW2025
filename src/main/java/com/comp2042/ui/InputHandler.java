@@ -9,6 +9,11 @@ import javafx.event.EventHandler;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
+/**
+ * Handles keyboard input for the game.
+ * Extracted from GuiController following Single Responsibility Principle -
+ * separates input handling from UI rendering and game logic.
+ */
 public final class InputHandler {
 
     private final InputEventListener eventListener;
@@ -17,6 +22,15 @@ public final class InputHandler {
     private final Runnable onNewGameRequested;
     private final Runnable onSoftDropRequested;
 
+    /**
+     * Creates a new InputHandler.
+     * 
+     * @param eventListener the listener for game events
+     * @param isPause the pause state property
+     * @param isGameOver the game over state property
+     * @param onNewGameRequested callback for new game requests
+     * @param onSoftDropRequested callback for soft drop requests
+     */
     public InputHandler(InputEventListener eventListener,
                         BooleanProperty isPause,
                         BooleanProperty isGameOver,
@@ -29,6 +43,11 @@ public final class InputHandler {
         this.onSoftDropRequested = onSoftDropRequested;
     }
 
+    /**
+     * Builds and returns the key event handler.
+     * 
+     * @return EventHandler for keyboard input
+     */
     public EventHandler<KeyEvent> build() {
         return keyEvent -> {
             if (isPause.getValue() == Boolean.FALSE && isGameOver.getValue() == Boolean.FALSE) {

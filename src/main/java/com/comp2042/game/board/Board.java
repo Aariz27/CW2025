@@ -1,30 +1,10 @@
 package com.comp2042.game.board;
 
-import com.comp2042.game.data.ViewData;
-import com.comp2042.game.data.ClearRow;
-import com.comp2042.game.score.Score;
-
-public interface Board {
-
-    boolean moveBrickDown();
-
-    boolean moveBrickLeft();
-
-    boolean moveBrickRight();
-
-    boolean rotateLeftBrick();
-
-    boolean trySpawnNewBrick();
-
-    int[][] getBoardMatrix();
-
-    ViewData getViewData();
-
-    void mergeBrickToBackground();
-
-    ClearRow clearRows();
-
-    Score getScore();
-
-    void newGame();
+/**
+ * Main board interface composed of segregated interfaces.
+ * Follows Interface Segregation Principle - clients can depend on specific
+ * interfaces (e.g., MovableBoard) instead of the full Board interface.
+ */
+public interface Board extends MovableBoard, ClearableBoard, SpawnableBoard, ScorableBoard {
+    // All methods inherited from segregated interfaces
 }
