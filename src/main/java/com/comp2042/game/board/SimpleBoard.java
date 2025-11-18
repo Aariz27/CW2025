@@ -9,6 +9,10 @@ import com.comp2042.game.data.ViewData;
 import com.comp2042.game.data.ClearRow;
 import com.comp2042.game.data.NextShapeInfo;
 import com.comp2042.game.score.Score;
+import com.comp2042.game.level.LinesClearedTracker;
+import com.comp2042.game.level.LevelManager;
+import com.comp2042.game.level.LevelStrategy;
+import com.comp2042.game.level.DefaultLevelStrategy;
 
 import java.awt.*;
 
@@ -26,6 +30,8 @@ public class SimpleBoard implements Board {
     private int[][] currentGameMatrix;
     private Point currentOffset;
     private final Score score;
+    private final LinesClearedTracker linesTracker;
+    private final LevelManager levelManager;
 
     /**
      * Creates a new SimpleBoard with the specified dimensions.
@@ -42,6 +48,9 @@ public class SimpleBoard implements Board {
         brickGenerator = BrickGeneratorFactory.createDefault();
         brickRotator = new BrickRotator();
         score = new Score();
+        linesTracker = new LinesClearedTracker();
+        LevelStrategy levelStrategy = new DefaultLevelStrategy();
+        levelManager = new LevelManager(linesTracker, levelStrategy);
     }
 
     @Override
@@ -135,12 +144,32 @@ public class SimpleBoard implements Board {
     public Score getScore() {
         return score;
     }
+    
+    /**
+     * Gets the lines cleared tracker.
+     * 
+     * @return the LinesClearedTracker
+     */
+    public LinesClearedTracker getLinesTracker() {
+        return linesTracker;
+    }
+    
+    /**
+     * Gets the level manager.
+     * 
+     * @return the LevelManager
+     */
+    public LevelManager getLevelManager() {
+        return levelManager;
+    }
 
 
     @Override
     public void newGame() {
         currentGameMatrix = new int[width][height];
         score.reset();
+        linesTracker.reset();
+        levelManager.reset();
         trySpawnNewBrick();
     }
 }

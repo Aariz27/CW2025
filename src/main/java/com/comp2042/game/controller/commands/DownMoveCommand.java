@@ -1,9 +1,11 @@
 package com.comp2042.game.controller.commands;
 
 import com.comp2042.game.board.Board;
+import com.comp2042.game.board.SimpleBoard;
 import com.comp2042.game.data.DownData;
 import com.comp2042.game.data.ViewData;
 import com.comp2042.game.events.EventSource;
+import com.comp2042.game.level.LevelManager;
 import com.comp2042.ui.GuiController;
 
 /**
@@ -59,13 +61,32 @@ public class DownMoveCommand implements MoveCommand {
     /**
      * Handles the case when a brick cannot move down (lands).
      * Encapsulates landing logic: merge brick to background, clear rows,
-     * update score, and spawn new brick.
+     * update score with level multiplier, track lines cleared, and spawn new brick.
      */
     private void handleBrickLanded() {
         board.mergeBrickToBackground();
         var clearRow = board.clearRows();
         if (clearRow.getLinesRemoved() > 0) {
-            board.getScore().add(clearRow.getScoreBonus());
+            // Get level manager if board is SimpleBoard
+            LevelManager levelManager = null;
+            if (board instanceof SimpleBoard simpleBoard) {
+                levelManager = simpleBoard.getLevelManager();
+                // Track lines cleared
+                simpleBoard.getLinesTracker().addLines(clearRow.getLinesRemoved());
+                // Update level based on new total
+                boolean levelUp = levelManager.updateLevel();
+                if (levelUp) {
+                    guiController.onLevelUp(levelManager.getCurrentLevel());
+                }
+                // Apply level multiplier to score
+                int baseScore = clearRow.getScoreBonus();
+                double multiplier = levelManager.getCurrentLevelConfig().getScoreMultiplier();
+                int finalScore = (int) (baseScore * multiplier);
+                board.getScore().add(finalScore);
+            } else {
+                // Fallback if not SimpleBoard (shouldn't happen in practice)
+                board.getScore().add(clearRow.getScoreBonus());
+            }
         }
         if (board.trySpawnNewBrick()) {
             guiController.gameOver();

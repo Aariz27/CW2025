@@ -5,7 +5,9 @@ import com.comp2042.game.events.MoveEvent;
 import com.comp2042.game.data.DownData;
 import com.comp2042.game.data.ViewData;
 import com.comp2042.game.board.Board;
+import com.comp2042.game.board.SimpleBoard;
 import com.comp2042.game.controller.commands.*;
+import com.comp2042.game.level.LevelManager;
 import com.comp2042.ui.GuiController;
 
 /**
@@ -35,6 +37,12 @@ public class GameController implements InputEventListener {
         viewGuiController.setEventListener(this);
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
         viewGuiController.bindScore(board.getScore().scoreProperty());
+        
+        // Bind level if board is SimpleBoard
+        if (board instanceof SimpleBoard simpleBoard) {
+            LevelManager levelManager = simpleBoard.getLevelManager();
+            viewGuiController.bindLevel(levelManager);
+        }
     }
     
     /**

@@ -23,6 +23,7 @@ import com.comp2042.game.events.EventType;
 import com.comp2042.game.events.EventSource;
 import com.comp2042.game.data.ViewData;
 import com.comp2042.game.data.DownData;
+import com.comp2042.game.level.LevelManager;
 
 //imports for the bindScore method:
 import javafx.beans.binding.Bindings;
@@ -46,8 +47,13 @@ public class GuiController implements Initializable {
 
     @FXML
     private Label scoreLabel;
+    
+    @FXML
+    private Label levelLabel;
 
     private Rectangle[][] displayMatrix;
+    
+    private LevelManager levelManager;
 
     private InputEventListener eventListener;
 
@@ -104,8 +110,21 @@ public class GuiController implements Initializable {
         }
         gameViewModel.positionBrickPanel(gamePanel, brickPanel, brick);
 
-
-        gameTimer.start(() -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD)), 400.0);
+        // Start timer with level 1 speed (400ms)
+        startTimerWithCurrentLevelSpeed();
+    }
+    
+    /**
+     * Starts the game timer with the current level's drop speed.
+     */
+    private void startTimerWithCurrentLevelSpeed() {
+        if (levelManager != null) {
+            double speed = levelManager.getCurrentLevelConfig().getDropSpeedMs();
+            gameTimer.start(() -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD)), speed);
+        } else {
+            // Fallback to default speed if level manager not set
+            gameTimer.start(() -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD)), 400.0);
+        }
     }
 
 
@@ -127,7 +146,14 @@ public class GuiController implements Initializable {
         if (isPause.getValue() == Boolean.FALSE) {
             DownData downData = eventListener.onDownEvent(event);
             if (downData.getClearRow() != null && downData.getClearRow().getLinesRemoved() > 0) {
-                NotificationPanel notificationPanel = new NotificationPanel("+" + downData.getClearRow().getScoreBonus());
+                // Calculate final score with level multiplier for display
+                int baseScore = downData.getClearRow().getScoreBonus();
+                int finalScore = baseScore;
+                if (levelManager != null) {
+                    double multiplier = levelManager.getCurrentLevelConfig().getScoreMultiplier();
+                    finalScore = (int) (baseScore * multiplier);
+                }
+                NotificationPanel notificationPanel = new NotificationPanel("+" + finalScore);
                 groupNotification.getChildren().add(notificationPanel);
                 notificationPanel.showScore(groupNotification.getChildren());
             }
@@ -162,6 +188,39 @@ public class GuiController implements Initializable {
             );
         }
     }
+    
+    /**
+     * Binds the level property to the level label.
+     * 
+     * @param levelManager the level manager containing the level property
+     */
+    public void bindLevel(LevelManager levelManager) {
+        this.levelManager = levelManager;
+        if (levelLabel != null && levelManager != null) {
+            levelLabel.textProperty().bind(
+                Bindings.createStringBinding(
+                    () -> "Level: " + levelManager.levelProperty().getValue(),
+                    levelManager.levelProperty()
+                )
+            );
+        }
+    }
+    
+    /**
+     * Called when the player levels up.
+     * Shows a notification and updates the timer speed.
+     * 
+     * @param newLevel the new level number
+     */
+    public void onLevelUp(int newLevel) {
+        // Show level-up notification
+        NotificationPanel notificationPanel = new NotificationPanel("LEVEL " + newLevel + "!");
+        groupNotification.getChildren().add(notificationPanel);
+        notificationPanel.showScore(groupNotification.getChildren());
+        
+        // Update timer speed for new level
+        startTimerWithCurrentLevelSpeed();
+    }
 
     public void gameOver() {
         gameTimer.stop();
@@ -174,7 +233,7 @@ public class GuiController implements Initializable {
         gameOverPanel.setVisible(false);
         eventListener.createNewGame();
         gamePanel.requestFocus();
-        gameTimer.start(() -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD)), 400.0);
+        startTimerWithCurrentLevelSpeed();
         isPause.setValue(Boolean.FALSE);
         isGameOver.setValue(Boolean.FALSE);
     }
