@@ -43,6 +43,9 @@ public class GuiController implements Initializable {
     private GridPane brickPanel;
 
     @FXML
+    private GridPane ghostPanel;
+
+    @FXML
     private GameOverPanel gameOverPanel;
 
     @FXML
@@ -58,7 +61,9 @@ public class GuiController implements Initializable {
     private InputEventListener eventListener;
 
     private Rectangle[][] rectangles;
-
+    
+    private Rectangle[][] ghostRectangles;
+    
     private GameTimer gameTimer;
 
     private final BooleanProperty isPause = new SimpleBooleanProperty();
@@ -99,6 +104,7 @@ public class GuiController implements Initializable {
             }
         }
 
+        // Initialize active brick panel
         rectangles = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
         for (int i = 0; i < brick.getBrickData().length; i++) {
             for (int j = 0; j < brick.getBrickData()[i].length; j++) {
@@ -109,6 +115,21 @@ public class GuiController implements Initializable {
             }
         }
         gameViewModel.positionBrickPanel(gamePanel, brickPanel, brick);
+
+        // Initialize ghost panel with semi-transparent rectangles
+        ghostRectangles = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
+        for (int i = 0; i < brick.getBrickData().length; i++) {
+            for (int j = 0; j < brick.getBrickData()[i].length; j++) {
+                Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
+                rectangle.setFill(ColorMapper.getGhostFillColor(brick.getBrickData()[i][j]));
+                rectangle.setArcHeight(9);
+                rectangle.setArcWidth(9);
+                ghostRectangles[i][j] = rectangle;
+                ghostPanel.add(rectangle, j, i);
+            }
+        }
+        // Position ghost panel at the landing position
+        positionGhostPanel(brick);
 
         // Start timer with level 1 speed (400ms)
         startTimerWithCurrentLevelSpeed();
@@ -133,6 +154,35 @@ public class GuiController implements Initializable {
         if (isPause.getValue() == Boolean.FALSE) {
             gameViewModel.positionBrickPanel(gamePanel, brickPanel, brick);
             gameViewModel.updateBrickRectangles(rectangles, brick);
+            
+            // Update ghost piece position and appearance
+            positionGhostPanel(brick);
+            updateGhostRectangles(brick);
+        }
+    }
+    
+    /**
+     * Positions the ghost panel at the landing position from ViewData.
+     * 
+     * @param brick the view data containing ghost position
+     */
+    private void positionGhostPanel(ViewData brick) {
+        ghostPanel.setLayoutX(gamePanel.getLayoutX() + brick.getGhostX() * ghostPanel.getVgap() + brick.getGhostX() * BRICK_SIZE);
+        ghostPanel.setLayoutY(-42 + gamePanel.getLayoutY() + brick.getGhostY() * ghostPanel.getHgap() + brick.getGhostY() * BRICK_SIZE);
+    }
+    
+    /**
+     * Updates the ghost rectangles with semi-transparent colors.
+     * 
+     * @param brick the view data containing brick shape and colors
+     */
+    private void updateGhostRectangles(ViewData brick) {
+        for (int i = 0; i < brick.getBrickData().length; i++) {
+            for (int j = 0; j < brick.getBrickData()[i].length; j++) {
+                ghostRectangles[i][j].setFill(ColorMapper.getGhostFillColor(brick.getBrickData()[i][j]));
+                ghostRectangles[i][j].setArcHeight(9);
+                ghostRectangles[i][j].setArcWidth(9);
+            }
         }
     }
 
@@ -172,7 +222,8 @@ public class GuiController implements Initializable {
                 isPause,
                 isGameOver,
                 () -> newGame(null), // N key
-                () -> moveDown(new MoveEvent(EventType.DOWN, EventSource.USER)) // Down/S key
+                () -> moveDown(new MoveEvent(EventType.DOWN, EventSource.USER)), // Down/S key
+                this::refreshBrick // Refresh brick immediately after moves to fix latency
         );
     
         gamePanel.setOnKeyPressed(inputHandler.build());

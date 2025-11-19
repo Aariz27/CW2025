@@ -4,10 +4,12 @@ import com.comp2042.game.events.EventSource;
 import com.comp2042.game.events.EventType;
 import com.comp2042.game.events.InputEventListener;
 import com.comp2042.game.events.MoveEvent;
+import com.comp2042.game.data.ViewData;
 import javafx.beans.property.BooleanProperty;
 import javafx.event.EventHandler;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import java.util.function.Consumer;
 
 /**
  * Handles keyboard input for the game.
@@ -21,6 +23,7 @@ public final class InputHandler {
     private final BooleanProperty isGameOver;
     private final Runnable onNewGameRequested;
     private final Runnable onSoftDropRequested;
+    private final Consumer<ViewData> onBrickMoved;
 
     /**
      * Creates a new InputHandler.
@@ -30,17 +33,20 @@ public final class InputHandler {
      * @param isGameOver the game over state property
      * @param onNewGameRequested callback for new game requests
      * @param onSoftDropRequested callback for soft drop requests
+     * @param onBrickMoved callback to refresh brick after movement (accepts ViewData)
      */
     public InputHandler(InputEventListener eventListener,
                         BooleanProperty isPause,
                         BooleanProperty isGameOver,
                         Runnable onNewGameRequested,
-                        Runnable onSoftDropRequested) {
+                        Runnable onSoftDropRequested,
+                        Consumer<ViewData> onBrickMoved) {
         this.eventListener = eventListener;
         this.isPause = isPause;
         this.isGameOver = isGameOver;
         this.onNewGameRequested = onNewGameRequested;
         this.onSoftDropRequested = onSoftDropRequested;
+        this.onBrickMoved = onBrickMoved;
     }
 
     /**
@@ -52,15 +58,18 @@ public final class InputHandler {
         return keyEvent -> {
             if (isPause.getValue() == Boolean.FALSE && isGameOver.getValue() == Boolean.FALSE) {
                 if (keyEvent.getCode() == KeyCode.LEFT || keyEvent.getCode() == KeyCode.A) {
-                    eventListener.onLeftEvent(new MoveEvent(EventType.LEFT, EventSource.USER));
+                    ViewData viewData = eventListener.onLeftEvent(new MoveEvent(EventType.LEFT, EventSource.USER));
+                    onBrickMoved.accept(viewData);
                     keyEvent.consume();
                 }
                 if (keyEvent.getCode() == KeyCode.RIGHT || keyEvent.getCode() == KeyCode.D) {
-                    eventListener.onRightEvent(new MoveEvent(EventType.RIGHT, EventSource.USER));
+                    ViewData viewData = eventListener.onRightEvent(new MoveEvent(EventType.RIGHT, EventSource.USER));
+                    onBrickMoved.accept(viewData);
                     keyEvent.consume();
                 }
                 if (keyEvent.getCode() == KeyCode.UP || keyEvent.getCode() == KeyCode.W) {
-                    eventListener.onRotateEvent(new MoveEvent(EventType.ROTATE, EventSource.USER));
+                    ViewData viewData = eventListener.onRotateEvent(new MoveEvent(EventType.ROTATE, EventSource.USER));
+                    onBrickMoved.accept(viewData);
                     keyEvent.consume();
                 }
                 if (keyEvent.getCode() == KeyCode.DOWN || keyEvent.getCode() == KeyCode.S) {
