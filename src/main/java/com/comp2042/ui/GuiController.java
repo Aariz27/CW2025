@@ -211,6 +211,30 @@ public class GuiController implements Initializable {
         }
         gamePanel.requestFocus();
     }
+    
+    /**
+     * Handles hard drop - instantly drops piece to ghost position.
+     * Called when player presses SPACE bar.
+     */
+    private void handleHardDrop() {
+        if (isPause.getValue() == Boolean.FALSE) {
+            DownData downData = eventListener.onHardDropEvent(new MoveEvent(EventType.HARD_DROP, EventSource.USER));
+            if (downData.getClearRow() != null && downData.getClearRow().getLinesRemoved() > 0) {
+                // Calculate final score with level multiplier for display
+                int baseScore = downData.getClearRow().getScoreBonus();
+                int finalScore = baseScore;
+                if (levelManager != null) {
+                    double multiplier = levelManager.getCurrentLevelConfig().getScoreMultiplier();
+                    finalScore = (int) (baseScore * multiplier);
+                }
+                NotificationPanel notificationPanel = new NotificationPanel("+" + finalScore);
+                groupNotification.getChildren().add(notificationPanel);
+                notificationPanel.showScore(groupNotification.getChildren());
+            }
+            refreshBrick(downData.getViewData());
+        }
+        gamePanel.requestFocus();
+    }
 
     //added setEventListener method here:
     public void setEventListener(InputEventListener eventListener) {
@@ -222,7 +246,8 @@ public class GuiController implements Initializable {
                 isPause,
                 isGameOver,
                 () -> newGame(null), // N key
-                () -> moveDown(new MoveEvent(EventType.DOWN, EventSource.USER)), // Down/S key
+                () -> moveDown(new MoveEvent(EventType.DOWN, EventSource.USER)), // Down/S key - soft drop
+                this::handleHardDrop, // Space key - hard drop
                 this::refreshBrick // Refresh brick immediately after moves to fix latency
         );
     

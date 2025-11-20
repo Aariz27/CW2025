@@ -98,6 +98,21 @@ public class GameController implements InputEventListener {
     }
     
     /**
+     * Handles hard drop event using Command pattern.
+     * Instantly drops the piece to the ghost position (where it will land).
+     * Awards 2 points per cell dropped and handles landing logic.
+     * 
+     * @param event the move event
+     * @return DownData containing clear row information and view data
+     */
+    @Override
+    public DownData onHardDropEvent(MoveEvent event) {
+        MoveCommand command = new HardDropMoveCommand(board, viewGuiController);
+        command.execute();
+        return ((HardDropMoveCommand) command).getDownData();
+    }
+    
+    /**
      * Resets the game to start a new game.
      */
     @Override
