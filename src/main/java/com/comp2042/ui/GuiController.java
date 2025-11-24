@@ -104,6 +104,7 @@ public class GuiController implements Initializable {
         reflection.setFraction(0.8);
         reflection.setTopOpacity(0.9);
         reflection.setTopOffset(-12);
+        gameOverPanel.setEffect(reflection);
     }
 
     public void initGameView(int[][] boardMatrix, ViewData brick) {
