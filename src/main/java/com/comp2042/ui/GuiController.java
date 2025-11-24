@@ -54,6 +54,9 @@ public class GuiController implements Initializable {
 
     @FXML
     private Label scoreLabel;
+    
+    @FXML
+    private Label pauseLabel;
 
     private Rectangle[][] displayMatrix;
 
@@ -95,6 +98,10 @@ public class GuiController implements Initializable {
                 }
                 if (keyEvent.getCode() == KeyCode.N) {
                     newGame(null);
+                }
+                if (keyEvent.getCode() == KeyCode.P) {
+                    togglePause();
+                    keyEvent.consume();
                 }
             }
         });
@@ -245,6 +252,46 @@ public class GuiController implements Initializable {
     }
 
     public void pauseGame(ActionEvent actionEvent) {
+        togglePause();
         gamePanel.requestFocus();
+    }
+    
+    /**
+     * Toggles the pause state of the game.
+     * Pauses/resumes the game timer and updates the pause state.
+     */
+    public void togglePause() {
+        if (isGameOver.getValue() == Boolean.TRUE) {
+            return; // Don't allow pause when game is over
+        }
+        
+        boolean currentPauseState = isPause.getValue();
+        isPause.setValue(!currentPauseState);
+        
+        if (isPause.getValue()) {
+            // Pausing the game
+            timeLine.pause();
+            showPauseNotification();
+        } else {
+            // Resuming the game
+            timeLine.play();
+            hidePauseNotification();
+        }
+    }
+    
+    /**
+     * Shows a pause notification on screen.
+     */
+    private void showPauseNotification() {
+        NotificationPanel pauseNotification = new NotificationPanel("PAUSED - Press P to Resume");
+        groupNotification.getChildren().add(pauseNotification);
+    }
+    
+    /**
+     * Hides the pause notification.
+     */
+    private void hidePauseNotification() {
+        // Remove all notifications to clear the pause message
+        groupNotification.getChildren().clear();
     }
 }
