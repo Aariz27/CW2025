@@ -67,7 +67,6 @@ public class GuiController implements Initializable {
 
     private final BooleanProperty isGameOver = new SimpleBooleanProperty();
 
-    //added input handler here:
     private InputHandler inputHandler;
 
     private final GameViewModel gameViewModel = new GameViewModel();
@@ -79,8 +78,6 @@ public class GuiController implements Initializable {
         gamePanel.requestFocus();
 
         gameTimer = new GameTimer();
-
-        //removed the input handler from here.
 
         gameOverPanel.setVisible(false);
 
@@ -103,29 +100,11 @@ public class GuiController implements Initializable {
         }
 
         // Initialize active brick panel
-        rectangles = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
-        for (int i = 0; i < brick.getBrickData().length; i++) {
-            for (int j = 0; j < brick.getBrickData()[i].length; j++) {
-                Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
-                rectangle.setFill(ColorMapper.getFillColor(brick.getBrickData()[i][j]));
-                rectangles[i][j] = rectangle;
-                brickPanel.add(rectangle, j, i);
-            }
-        }
+        rectangles = initRectangleGrid(brick.getBrickData(), brickPanel, false);
         gameViewModel.positionBrickPanel(gamePanel, brickPanel, brick);
 
         // Initialize ghost panel with semi-transparent rectangles
-        ghostRectangles = new Rectangle[brick.getBrickData().length][brick.getBrickData()[0].length];
-        for (int i = 0; i < brick.getBrickData().length; i++) {
-            for (int j = 0; j < brick.getBrickData()[i].length; j++) {
-                Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
-                rectangle.setFill(ColorMapper.getGhostFillColor(brick.getBrickData()[i][j]));
-                rectangle.setArcHeight(9);
-                rectangle.setArcWidth(9);
-                ghostRectangles[i][j] = rectangle;
-                ghostPanel.add(rectangle, j, i);
-            }
-        }
+        ghostRectangles = initRectangleGrid(brick.getBrickData(), ghostPanel, true);
         // Position ghost panel at the landing position
         positionGhostPanel(brick);
 
@@ -234,7 +213,6 @@ public class GuiController implements Initializable {
         gamePanel.requestFocus();
     }
 
-    //added setEventListener method here:
     public void setEventListener(InputEventListener eventListener) {
         this.eventListener = eventListener;
 
@@ -354,5 +332,33 @@ public class GuiController implements Initializable {
      */
     private void hidePauseNotification() {
         groupNotification.getChildren().clear();
+    }
+    
+    /**
+     * Initializes a grid of rectangles for displaying brick shapes.
+     * Reduces code duplication for creating brick and ghost panels.
+     * 
+     * @param brickData the brick shape data matrix
+     * @param targetPane the GridPane to add rectangles to
+     * @param isGhost whether this is for a ghost piece (semi-transparent with rounded corners)
+     * @return a 2D array of Rectangle objects
+     */
+    private Rectangle[][] initRectangleGrid(int[][] brickData, GridPane targetPane, boolean isGhost) {
+        Rectangle[][] grid = new Rectangle[brickData.length][brickData[0].length];
+        for (int i = 0; i < brickData.length; i++) {
+            for (int j = 0; j < brickData[i].length; j++) {
+                Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
+                if (isGhost) {
+                    rectangle.setFill(ColorMapper.getGhostFillColor(brickData[i][j]));
+                    rectangle.setArcHeight(9);
+                    rectangle.setArcWidth(9);
+                } else {
+                    rectangle.setFill(ColorMapper.getFillColor(brickData[i][j]));
+                }
+                grid[i][j] = rectangle;
+                targetPane.add(rectangle, j, i);
+            }
+        }
+        return grid;
     }
 }

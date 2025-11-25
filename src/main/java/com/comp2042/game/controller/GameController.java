@@ -32,12 +32,12 @@ public class GameController implements InputEventListener {
      * Accepts Board interface rather than concrete SimpleBoard, following
      * Dependency Inversion Principle for better testability.
      * 
-     * @param c the GUI controller for UI updates
+     * @param guiController the GUI controller for UI updates
      * @param board the board implementation (injected via interface)
      */
-    public GameController(GuiController c, Board board) {
+    public GameController(GuiController guiController, Board board) {
         this.board = board;
-        viewGuiController = c;
+        viewGuiController = guiController;
         board.trySpawnNewBrick();
         viewGuiController.setEventListener(this);
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
