@@ -6,7 +6,12 @@ import com.comp2042.game.data.DownData;
 import com.comp2042.game.data.ViewData;
 import com.comp2042.game.board.Board;
 import com.comp2042.game.board.SimpleBoard;
-import com.comp2042.game.controller.commands.*;
+import com.comp2042.game.controller.commands.MoveCommand;
+import com.comp2042.game.controller.commands.DownMoveCommand;
+import com.comp2042.game.controller.commands.LeftMoveCommand;
+import com.comp2042.game.controller.commands.RightMoveCommand;
+import com.comp2042.game.controller.commands.RotateMoveCommand;
+import com.comp2042.game.controller.commands.HardDropMoveCommand;
 import com.comp2042.game.level.LevelManager;
 import com.comp2042.ui.GuiController;
 

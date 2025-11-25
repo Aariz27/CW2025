@@ -2,7 +2,6 @@ package com.comp2042.game.events;
 
 import com.comp2042.game.data.DownData;
 import com.comp2042.game.data.ViewData;
-// import com.comp2042.game.events.MoveEvent;
 
 public interface InputEventListener {
 

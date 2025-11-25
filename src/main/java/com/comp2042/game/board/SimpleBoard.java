@@ -14,7 +14,7 @@ import com.comp2042.game.level.LevelManager;
 import com.comp2042.game.level.LevelStrategy;
 import com.comp2042.game.level.DefaultLevelStrategy;
 
-import java.awt.*;
+import java.awt.Point;
 
 /**
  * Concrete board implementation.

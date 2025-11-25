@@ -16,7 +16,6 @@ import javafx.scene.text.Font;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-//missing imports (now added):
 import com.comp2042.game.events.InputEventListener;
 import com.comp2042.game.events.MoveEvent;
 import com.comp2042.game.events.EventType;
@@ -24,8 +23,6 @@ import com.comp2042.game.events.EventSource;
 import com.comp2042.game.data.ViewData;
 import com.comp2042.game.data.DownData;
 import com.comp2042.game.level.LevelManager;
-
-//imports for the bindScore method:
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.Label;
 
@@ -91,6 +88,7 @@ public class GuiController implements Initializable {
         reflection.setFraction(0.8);
         reflection.setTopOpacity(0.9);
         reflection.setTopOffset(-12);
+        gameOverPanel.setEffect(reflection);
     }
 
     public void initGameView(int[][] boardMatrix, ViewData brick) {
@@ -248,6 +246,7 @@ public class GuiController implements Initializable {
                 () -> newGame(null), // N key
                 () -> moveDown(new MoveEvent(EventType.DOWN, EventSource.USER)), // Down/S key - soft drop
                 this::handleHardDrop, // Space key - hard drop
+                this::togglePause, // P key - pause/resume
                 this::refreshBrick // Refresh brick immediately after moves to fix latency
         );
     
@@ -315,6 +314,28 @@ public class GuiController implements Initializable {
     }
 
     public void pauseGame(ActionEvent actionEvent) {
+        togglePause();
         gamePanel.requestFocus();
+    }
+    
+    /**
+     * Toggles the pause state of the game.
+     * Pauses or resumes the game timer.
+     */
+    public void togglePause() {
+        if (isGameOver.getValue() == Boolean.TRUE) {
+            return; // Don't allow pause when game is over
+        }
+        
+        boolean currentPauseState = isPause.getValue();
+        isPause.setValue(!currentPauseState);
+        
+        if (isPause.getValue()) {
+            // Pausing the game
+            gameTimer.stop();
+        } else {
+            // Resuming the game
+            startTimerWithCurrentLevelSpeed();
+        }
     }
 }
