@@ -7,11 +7,9 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 
 import java.net.URL;
-import java.util.ResourceBundle;
 
 import com.comp2042.ui.GuiController;
 import com.comp2042.game.board.Board;
-
 import com.comp2042.game.board.SimpleBoard;
 import com.comp2042.game.controller.GameController;
 
@@ -21,8 +19,7 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
 
         URL location = getClass().getClassLoader().getResource("gameLayout.fxml");
-        ResourceBundle resources = null;
-        FXMLLoader fxmlLoader = new FXMLLoader(location, resources);
+        FXMLLoader fxmlLoader = new FXMLLoader(location);
         Parent root = fxmlLoader.load();
         GuiController c = fxmlLoader.getController();
 
