@@ -320,7 +320,7 @@ public class GuiController implements Initializable {
     
     /**
      * Toggles the pause state of the game.
-     * Pauses or resumes the game timer.
+     * Pauses or resumes the game timer and shows/hides the pause notification.
      */
     public void togglePause() {
         if (isGameOver.getValue() == Boolean.TRUE) {
@@ -333,9 +333,26 @@ public class GuiController implements Initializable {
         if (isPause.getValue()) {
             // Pausing the game
             gameTimer.stop();
+            showPauseNotification();
         } else {
             // Resuming the game
             startTimerWithCurrentLevelSpeed();
+            hidePauseNotification();
         }
+    }
+    
+    /**
+     * Shows a pause notification on screen.
+     */
+    private void showPauseNotification() {
+        NotificationPanel pauseNotification = new NotificationPanel("PAUSED - Press P to Resume");
+        groupNotification.getChildren().add(pauseNotification);
+    }
+    
+    /**
+     * Hides the pause notification by clearing all notifications.
+     */
+    private void hidePauseNotification() {
+        groupNotification.getChildren().clear();
     }
 }
