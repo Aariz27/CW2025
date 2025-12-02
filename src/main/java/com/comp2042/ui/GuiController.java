@@ -369,8 +369,6 @@ public class GuiController implements Initializable {
     public void pauseGame(ActionEvent actionEvent) {
         gamePanel.requestFocus();
     }
-<<<<<<< Updated upstream
-=======
     
     /**
      * Toggles the pause state of the game.
@@ -445,5 +443,4 @@ public class GuiController implements Initializable {
         }
         return grid;
     }
->>>>>>> Stashed changes
 }
