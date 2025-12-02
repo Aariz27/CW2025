@@ -24,6 +24,7 @@ public final class InputHandler {
     private final Runnable onNewGameRequested;
     private final Runnable onSoftDropRequested;
     private final Runnable onHardDropRequested;
+    private final Runnable onPauseRequested;
     private final Consumer<ViewData> onBrickMoved;
 
     /**
@@ -35,6 +36,7 @@ public final class InputHandler {
      * @param onNewGameRequested callback for new game requests
      * @param onSoftDropRequested callback for soft drop requests (Down/S key)
      * @param onHardDropRequested callback for hard drop requests (Space key)
+     * @param onPauseRequested callback for pause toggle (P key)
      * @param onBrickMoved callback to refresh brick after movement (accepts ViewData)
      */
     public InputHandler(InputEventListener eventListener,
@@ -43,6 +45,7 @@ public final class InputHandler {
                         Runnable onNewGameRequested,
                         Runnable onSoftDropRequested,
                         Runnable onHardDropRequested,
+                        Runnable onPauseRequested,
                         Consumer<ViewData> onBrickMoved) {
         this.eventListener = eventListener;
         this.isPause = isPause;
@@ -50,6 +53,7 @@ public final class InputHandler {
         this.onNewGameRequested = onNewGameRequested;
         this.onSoftDropRequested = onSoftDropRequested;
         this.onHardDropRequested = onHardDropRequested;
+        this.onPauseRequested = onPauseRequested;
         this.onBrickMoved = onBrickMoved;
     }
 
@@ -87,6 +91,10 @@ public final class InputHandler {
             }
             if (keyEvent.getCode() == KeyCode.N) {
                 onNewGameRequested.run();
+                keyEvent.consume();
+            }
+            if (keyEvent.getCode() == KeyCode.P) {
+                onPauseRequested.run();
                 keyEvent.consume();
             }
         };

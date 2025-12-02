@@ -255,6 +255,7 @@ public class GuiController implements Initializable {
                 () -> newGame(null), // N key
                 () -> moveDown(new MoveEvent(EventType.DOWN, EventSource.USER)), // Down/S key - soft drop
                 this::handleHardDrop, // Space key - hard drop
+                this::togglePause, // P key - pause/resume
                 this::refreshBrick // Refresh brick immediately after moves to fix latency
         );
     
