@@ -5,10 +5,18 @@ import com.comp2042.game.operations.MatrixOperations;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The S-shaped tetromino (zigzag).
+ * This brick has two rotation states.
+ * Represented by the value 5 in the matrix.
+ */
 final class SBrick implements Brick {
 
     private final List<int[][]> brickMatrix = new ArrayList<>();
 
+    /**
+     * Constructs an S-brick with its two rotation states.
+     */
     public SBrick() {
         brickMatrix.add(new int[][]{
                 {0, 0, 0, 0},

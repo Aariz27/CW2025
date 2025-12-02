@@ -18,6 +18,7 @@ import java.util.ResourceBundle;
 
 import com.comp2042.game.events.InputEventListener;
 import com.comp2042.game.events.MoveEvent;
+import javafx.scene.control.Label;
 import com.comp2042.game.events.EventType;
 import com.comp2042.game.events.EventSource;
 import com.comp2042.game.data.ViewData;
@@ -25,60 +26,108 @@ import com.comp2042.game.data.DownData;
 import com.comp2042.game.level.LevelManager;
 import com.comp2042.game.score.HighScoreManager;
 import javafx.beans.binding.Bindings;
-import javafx.scene.control.Label;
 
+/**
+ * Main GUI controller for the Tetris game interface.
+ * Manages JavaFX UI components, handles rendering of the game board,
+ * active brick, ghost piece, and coordinates user input with game logic.
+ * 
+ * <p>This controller implements multiple design patterns:
+ * <ul>
+ *   <li><b>MVC Pattern:</b> Acts as the View, delegating game logic to GameController</li>
+ *   <li><b>Observer Pattern:</b> Uses JavaFX property bindings for automatic UI updates</li>
+ *   <li><b>Dependency Injection:</b> Receives InputEventListener through setter injection</li>
+ * </ul>
+ * 
+ * <p>Key responsibilities:
+ * <ul>
+ *   <li>Rendering the game board, active brick, and ghost piece</li>
+ *   <li>Handling keyboard input and delegating to game controller</li>
+ *   <li>Managing game timer and pause/resume functionality</li>
+ *   <li>Displaying score, level, and notification animations</li>
+ * </ul>
+ */
 public class GuiController implements Initializable {
 
+    /** Size of each brick block in pixels */
     private static final int BRICK_SIZE = 20;
+    
 
+    /** Main game board grid panel */
     @FXML
     private GridPane gamePanel;
 
+    /** Container for notification panels (score bonuses, level ups) */
     @FXML
     private Group groupNotification;
 
+    /** Panel for displaying the active brick */
     @FXML
     private GridPane brickPanel;
 
+    /** Panel for displaying the ghost piece (landing preview) */
     @FXML
     private GridPane ghostPanel;
 
+    /** Panel displayed when game is over */
     @FXML
     private GameOverPanel gameOverPanel;
 
+    /** Label displaying the current score */
     @FXML
     private Label scoreLabel;
     
+    /** Label displaying the current level */
     @FXML
     private Label levelLabel;
     
+    /** Label displaying the high score */
     @FXML
     private Label highScoreLabel;
 
+    /** 2D array of rectangles representing the game board cells */
     private Rectangle[][] displayMatrix;
     
+    /** Manages level progression and configuration */
     private LevelManager levelManager;
+    
+    /** Manages high score tracking and persistence */
     private HighScoreManager highScoreManager;
     
+    /** Panel displayed when game is paused */
     private PausePanel pausePanel;
 
+    /** Listener for handling input events from the UI */
     private InputEventListener eventListener;
 
+    /** 2D array of rectangles representing the active brick */
     private Rectangle[][] rectangles;
     
+    /** 2D array of rectangles representing the ghost piece */
     private Rectangle[][] ghostRectangles;
     
+    /** Timer for automatic brick dropping */
     private GameTimer gameTimer;
 
+    /** Property tracking whether the game is paused */
     private final BooleanProperty isPause = new SimpleBooleanProperty();
 
+    /** Property tracking whether the game is over */
     private final BooleanProperty isGameOver = new SimpleBooleanProperty();
 
-    //added input handler here:
+    /** Handler for keyboard input */
     private InputHandler inputHandler;
 
+    /** View model for game rendering operations */
     private final GameViewModel gameViewModel = new GameViewModel();
 
+    /**
+     * Initializes the GUI controller when the FXML layout is loaded.
+     * Sets up fonts, focus handling, game timer, and visual effects.
+     * 
+     * @param location the location used to resolve relative paths (unused)
+     * @param resources the resources used for localization (unused)
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         Font.loadFont(getClass().getClassLoader().getResource("digital.ttf").toExternalForm(), 38);
@@ -86,8 +135,6 @@ public class GuiController implements Initializable {
         gamePanel.requestFocus();
 
         gameTimer = new GameTimer();
-
-        //removed the input handler from here.
 
         gameOverPanel.setVisible(false);
         
@@ -100,6 +147,14 @@ public class GuiController implements Initializable {
         reflection.setTopOffset(-12);
     }
 
+    /**
+     * Initializes the game view with the board matrix and initial brick.
+     * Creates all rectangle arrays for the board, active brick, and ghost piece.
+     * Starts the game timer after initialization.
+     * 
+     * @param boardMatrix the 2D array representing the game board state
+     * @param brick the initial brick's view data
+     */
     public void initGameView(int[][] boardMatrix, ViewData brick) {
         displayMatrix = new Rectangle[boardMatrix.length][boardMatrix[0].length];
         for (int i = 2; i < boardMatrix.length; i++) {
@@ -157,6 +212,12 @@ public class GuiController implements Initializable {
 
 
 
+    /**
+     * Refreshes the active brick and ghost piece display with new view data.
+     * Only updates if the game is not paused.
+     * 
+     * @param brick the updated view data containing brick position and shape
+     */
     private void refreshBrick(ViewData brick) {
         if (isPause.getValue() == Boolean.FALSE) {
             gameViewModel.positionBrickPanel(gamePanel, brickPanel, brick);
@@ -193,12 +254,23 @@ public class GuiController implements Initializable {
         }
     }
 
+    /**
+     * Refreshes the game board background with the current board state.
+     * 
+     * @param board the 2D array representing the current board state
+     */
     public void refreshGameBackground(int[][] board) {
         gameViewModel.updateBoard(displayMatrix, board);
     }
 
     
 
+    /**
+     * Handles downward movement of the active brick.
+     * Shows score notification if rows are cleared.
+     * 
+     * @param event the movement event containing source information
+     */
     private void moveDown(MoveEvent event) {
         if (isPause.getValue() == Boolean.FALSE) {
             DownData downData = eventListener.onDownEvent(event);
@@ -243,7 +315,12 @@ public class GuiController implements Initializable {
         gamePanel.requestFocus();
     }
 
-    //added setEventListener method here:
+    /**
+     * Sets the input event listener and configures keyboard input handling.
+     * Implements dependency injection pattern.
+     * 
+     * @param eventListener the listener to handle game input events
+     */
     public void setEventListener(InputEventListener eventListener) {
         this.eventListener = eventListener;
 
@@ -262,6 +339,12 @@ public class GuiController implements Initializable {
         gamePanel.setOnKeyPressed(inputHandler.build());
     }
 
+    /**
+     * Binds the score property to the score label using JavaFX property binding.
+     * Implements the Observer pattern for automatic UI updates.
+     * 
+     * @param integerProperty the score property to bind
+     */
     public void bindScore(IntegerProperty integerProperty) {
         if (scoreLabel != null) {
             scoreLabel.textProperty().bind(
@@ -323,6 +406,10 @@ public class GuiController implements Initializable {
         startTimerWithCurrentLevelSpeed();
     }
 
+    /**
+     * Handles game over state by stopping the timer, showing the game over panel,
+     * and checking for new high scores.
+     */
     public void gameOver() {
         gameTimer.stop();
         
@@ -345,6 +432,11 @@ public class GuiController implements Initializable {
         isPause.setValue(Boolean.FALSE); // Ensure not in pause state
     }
 
+    /**
+     * Starts a new game by resetting all state and restarting the timer.
+     * 
+     * @param actionEvent the action event (may be null if called programmatically)
+     */
     public void newGame(ActionEvent actionEvent) {
         gameTimer.stop();
         gameOverPanel.setVisible(false);
@@ -361,6 +453,11 @@ public class GuiController implements Initializable {
         isGameOver.setValue(Boolean.FALSE);
     }
 
+    /**
+     * Handles pause game action by restoring focus to the game panel.
+     * 
+     * @param actionEvent the action event
+     */
     public void pauseGame(ActionEvent actionEvent) {
         gamePanel.requestFocus();
     }

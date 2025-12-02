@@ -15,8 +15,28 @@ import com.comp2042.game.board.Board;
 import com.comp2042.game.board.SimpleBoard;
 import com.comp2042.game.controller.GameController;
 
+/**
+ * Main entry point for the Tetris JavaFX application.
+ * Initializes the JavaFX application, loads the FXML layout, and
+ * sets up the game controller with dependency injection.
+ * 
+ * <p>This class follows the MVC pattern where:
+ * <ul>
+ *   <li>Model: {@link Board} and game state classes</li>
+ *   <li>View: {@link GuiController} and FXML layout</li>
+ *   <li>Controller: {@link GameController} coordinating logic</li>
+ * </ul>
+ */
 public class Main extends Application {
 
+    /**
+     * Initializes and starts the Tetris game application.
+     * Loads the FXML layout, creates the game board, and wires up
+     * the controller with dependency injection.
+     * 
+     * @param primaryStage the primary stage for this application
+     * @throws Exception if FXML loading fails or resources are missing
+     */
     @Override
     public void start(Stage primaryStage) throws Exception {
 
@@ -35,6 +55,11 @@ public class Main extends Application {
         new GameController(c, board);
     }
 
+    /**
+     * Application entry point.
+     * 
+     * @param args command line arguments (not used)
+     */
     public static void main(String[] args) {
         launch(args);
     }

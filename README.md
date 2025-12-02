@@ -1,1543 +1,922 @@
 # COMP2042 Tetris Refactoring & Enhancement Project
 
-## Overview
-This document tracks all refactoring work and new features added to the Tetris game codebase for COMP2042 coursework. The project demonstrates application of SOLID principles, design patterns, and object-oriented concepts while adding meaningful gameplay enhancements.
+## GitHub Repository
+
+**Repository URL**: https://github.com/Aariz27/CW2025
 
 ---
 
-## 1. Refactoring: Meaningful Package Naming/Organisation
+## Compilation Instructions
 
-### Changes Made
-Reorganized the entire codebase from a flat structure (`com.comp2042.*`) into a feature-focused package hierarchy:
+### Prerequisites
+- **Java Development Kit (JDK)**: Version 23
+- **Maven**: Maven 3.6+ (or use the included Maven wrapper)
+- **JavaFX**: Version 21.0.6 (automatically downloaded by Maven)
 
-#### New Package Structure:
-```
-com.comp2042/
-├── app/
-│   └── Main.java                    # Application entry point
-├── ui/
-│   ├── GuiController.java            # Main UI controller
-│   ├── GameOverPanel.java           # Game over UI component
-│   ├── NotificationPanel.java       # Score/notification display
-│   ├── InputHandler.java            # Keyboard input handling
-│   ├── GameTimer.java               # Game loop timing
-│   ├── GameViewModel.java           # View model for rendering
-│   ├── ColorMapper.java             # Color mapping utility
-│   └── color/                       # Color strategy implementations
-│       ├── ColorStrategy.java
-│       ├── ColorStrategyRegistry.java
-│       └── [8 color strategy classes]
-├── game/
-│   ├── board/                       # Board management
-│   │   ├── Board.java              # Main board interface
-│   │   ├── SimpleBoard.java        # Concrete board implementation
-│   │   ├── MovableBoard.java       # Movement interface
-│   │   ├── ClearableBoard.java     # Row clearing interface
-│   │   ├── SpawnableBoard.java     # Brick spawning interface
-│   │   └── ScorableBoard.java      # Scoring interface
-│   ├── bricks/                      # Tetromino pieces
-│   │   ├── Brick.java               # Brick interface
-│   │   ├── BrickGenerator.java     # Generator interface
-│   │   ├── BrickGeneratorFactory.java
-│   │   ├── RandomBrickGenerator.java
-│   │   └── [7 brick type classes: I, J, L, O, S, T, Z]
-│   ├── controller/                  # Game control logic
-│   │   ├── GameController.java     # Main game controller
-│   │   └── commands/                # Command pattern implementations
-│   │       ├── MoveCommand.java
-│   │       ├── DownMoveCommand.java
-│   │       ├── LeftMoveCommand.java
-│   │       ├── RightMoveCommand.java
-│   │       ├── RotateMoveCommand.java
-│   │       └── HardDropMoveCommand.java
-│   ├── data/                        # Data transfer objects
-│   │   ├── ViewData.java
-│   │   ├── DownData.java
-│   │   ├── ClearRow.java
-│   │   └── NextShapeInfo.java
-│   ├── events/                      # Event handling
-│   │   ├── InputEventListener.java
-│   │   ├── MoveEvent.java
-│   │   ├── EventType.java
-│   │   └── EventSource.java
-│   ├── operations/                  # Utility operations
-│   │   ├── MatrixOperations.java
-│   │   └── BrickRotator.java
-│   ├── score/                       # Scoring system
-│   │   └── Score.java
-│   └── level/                       # Level system (NEW FEATURE)
-│       ├── Level.java
-│       ├── LevelManager.java
-│       ├── LevelStrategy.java
-│       ├── DefaultLevelStrategy.java
-│       └── LinesClearedTracker.java
-└── resources/
-    ├── gameLayout.fxml
-    ├── window_style.css
-    ├── background_image.png
-    └── digital.ttf
+### Step-by-Step Compilation
+
+1. **Clone the repository**:
+```bash
+git clone [https://github.com/Aariz27/CW2025]
+cd CW2025
 ```
 
-### Benefits
-- **Improved Navigation**: Clear separation of concerns makes code easier to locate
-- **Access Control**: Package-private visibility can be used effectively
-- **Maintainability**: Related classes are grouped together
-- **Scalability**: Easy to add new features in appropriate packages
+2. **Clean and compile the project**:
+```bash
+./mvnw clean compile
+```
+   - On Windows, use `mvnw.cmd` instead of `./mvnw`
+   - This will download all dependencies automatically
+   - JavaFX libraries will be fetched from Maven Central
 
-### Files Modified
-- All Java files moved to new package locations (31 files reorganized)
-- All import statements updated
-- `pom.xml` updated with new main class path: `com.comp2042.app.Main`
-- FXML references updated: `fx:controller="com.comp2042.ui.GuiController"`
+3. **Run the application**:
+```bash
+./mvnw clean javafx:run
+```
+   - The game window will launch automatically
+   - No additional configuration needed
 
-### Commit Details
-- **Commit**: `732b2d7`
-- **Date**: October 28, 2025
-- **Message**: "refactor: reorganize packages for better structure"
+4. **Run tests** (optional):
+```bash
+./mvnw test
+```
+   - Executes all JUnit test cases
+   - Test results will be displayed in the console
+
+5. **Generate Javadoc** (optional):
+```bash
+./mvnw javadoc:javadoc
+```
+   - Documentation generated in `target/site/apidocs/`
+
+### Dependencies
+All dependencies are managed via Maven and automatically downloaded:
+- **JavaFX Controls & FXML**: Version 21.0.6
+- **JUnit Jupiter**: Version 5.12.1 (testing framework)
+- **Mockito**: Version 5.14.2 (mocking framework for tests)
+
+### Troubleshooting
+- If compilation fails, ensure Java 23 is installed: `java -version`
+- If JavaFX modules are not found, ensure Maven can download dependencies (check internet connection)
+- On macOS, you may need to allow the application in Security & Privacy settings
 
 ---
 
-## 2. Refactoring: Basic Maintenance
+## Implemented and Working Properly
 
-### 2.1 Method Renaming for Clarity
-**Changed**: `createNewBrick()` → `trySpawnNewBrick()`
+### 1. Package Reorganization (Refactoring)
+**Description**: Restructured the entire codebase from a flat package structure into a well-organized, feature-focused hierarchy.
 
-**Reason**: The original method name was misleading. The method returns `true` when a collision occurs (indicating failure), not success. The new name clearly indicates it attempts to spawn a brick and may fail.
+**Structure**:
+- `com.comp2042.app/` - Application entry point (Main.java)
+- `com.comp2042.ui/` - User interface components (8 classes + color package)
+- `com.comp2042.game.board/` - Board management (6 classes)
+- `com.comp2042.game.bricks/` - Tetromino pieces (10 classes)
+- `com.comp2042.game.controller/` - Game logic (1 class + 6 command classes)
+- `com.comp2042.game.data/` - Data transfer objects (4 classes)
+- `com.comp2042.game.events/` - Event handling (4 classes)
+- `com.comp2042.game.operations/` - Utility operations (2 classes)
+- `com.comp2042.game.score/` - Scoring system (2 classes)
+- `com.comp2042.game.level/` - Level progression (5 classes)
 
-**Impact**:
-- Updated `Board` interface declaration
-- Updated `SimpleBoard` implementation
-- Updated `GameController` calls (constructor and game loop)
-- Updated internal `SimpleBoard.newGame()` method
-
-### 2.2 Encapsulation Improvements
-- Made internal state private where appropriate
-- Added proper getter methods for controlled access
-- Ensured data immutability in DTOs (ViewData, DownData, etc.)
-
-### 2.3 Resource Cleanup
-- Verified all resources are properly used
-- Removed any unused imports
-- Ensured FXML and CSS resources are correctly referenced
+**Benefits**: The new structure makes it much easier to navigate the codebase and find related classes. It also improves maintainability and makes it easier to add new features in the future.
 
 ---
 
-## 3. Refactoring: Supporting Single Responsibility by Splitting Up Classes
+### 2. Single Responsibility Principle (SRP) - Class Decomposition
+**Description**: Decomposed `GuiController` (which had 200+ lines with multiple responsibilities) into focused classes.
 
-### 3.1 GuiController Decomposition
-**Problem**: `GuiController` was handling too many responsibilities:
-- Font loading
-- Key event routing
-- Animation timing
-- Board rendering
-- Notification management
-- Color mapping
+**Extracted Classes**:
+- **InputHandler**: Keyboard input processing (arrow keys, WASD, Space, P, N)
+- **GameTimer**: Game loop timing and automatic piece dropping
+- **GameViewModel**: Data-to-UI transformations and rendering calculations
+- **ColorMapper**: Color code to Paint object mapping
+- **NotificationPanel**: Score and notification display
+- **PausePanel**: Pause screen with interactive buttons
+- **GameOverPanel**: Game over screen with restart option
 
-**Solution**: Extracted responsibilities into focused classes:
-
-#### 3.1.1 InputHandler
-**File**: `com.comp2042.ui.InputHandler.java`
-
-**Responsibility**: Handles all keyboard input events
-- Processes arrow keys (LEFT, RIGHT, UP, DOWN)
-- Handles WASD alternative controls
-- Manages pause/game over state checks
-- Delegates to event listener callbacks
-
-**Benefits**:
-- Input logic isolated and testable
-- Can be easily modified without touching UI code
-- Follows Single Responsibility Principle
-
-#### 3.1.2 GameTimer
-**File**: `com.comp2042.ui.GameTimer.java`
-
-**Responsibility**: Manages game loop timing
-- Controls automatic piece dropping
-- Handles timer start/stop/pause
-- Adjusts speed based on level
-
-**Benefits**:
-- Timing logic separated from UI
-- Easy to modify drop speed behavior
-- Can be tested independently
-
-#### 3.1.3 GameViewModel
-**File**: `com.comp2042.ui.GameViewModel.java`
-
-**Responsibility**: Handles data-to-UI transformations
-- Positions brick panels
-- Updates rectangle colors
-- Calculates ghost piece positions
-- Transforms game state to visual representation
-
-**Benefits**:
-- Rendering logic separated from controller
-- Can be swapped for different view implementations
-- Easier to test rendering logic
-
-#### 3.1.4 ColorMapper & ColorStrategy
-**Files**: 
-- `com.comp2042.ui.ColorMapper.java`
-- `com.comp2042.ui.color.ColorStrategy.java` (interface)
-- `com.comp2042.ui.color.ColorStrategyRegistry.java`
-- 9 concrete color strategy classes:
-  - `TransparentColorStrategy.java` (code 0)
-  - `AquaColorStrategy.java` (code 1)
-  - `BlueVioletColorStrategy.java` (code 2)
-  - `DarkGreenColorStrategy.java` (code 3)
-  - `YellowColorStrategy.java` (code 4)
-  - `RedColorStrategy.java` (code 5)
-  - `BeigeColorStrategy.java` (code 6)
-  - `BurlyWoodColorStrategy.java` (code 7)
-  - `WhiteColorStrategy.java` (default/fallback)
-
-**Responsibility**: Maps color codes to Paint objects using polymorphism
-- Replaced 10-case switch statement with Strategy pattern
-- Each color code has its own strategy class implementing `ColorStrategy` interface
-- `ColorStrategyRegistry` uses HashMap for O(1) strategy lookup
-- Registry pattern provides centralized management
-
-**Implementation Details**:
-```java
-// Strategy interface
-public interface ColorStrategy {
-    int getColorCode();
-    Paint getColor();
-}
-
-// Registry manages all strategies
-public class ColorStrategyRegistry {
-    private static final Map<Integer, ColorStrategy> strategies = new HashMap<>();
-    
-    static {
-        register(new TransparentColorStrategy());
-        register(new AquaColorStrategy());
-        // ... 7 more strategies
-    }
-    
-    public static Paint getColor(int code) {
-        ColorStrategy strategy = strategies.getOrDefault(code, new WhiteColorStrategy());
-        return strategy.getColor(); // Polymorphic call
-    }
-}
-```
-
-**Benefits**:
-- Eliminates large switch statement (replaced 10 cases with polymorphic dispatch)
-- New colors added by creating new strategy class (no modification of existing code)
-- Demonstrates Open/Closed Principle perfectly
-- Registry Pattern provides centralized strategy management
-- Each strategy is independently testable
-
-### 3.2 Board Interface Segregation
-**Problem**: `Board` interface had too many responsibilities (movement, clearing, spawning, scoring all in one interface)
-
-**Solution**: Segregated into focused interfaces following Interface Segregation Principle:
-
-#### Segregated Interfaces:
-
-**`MovableBoard`** - Movement operations:
-- `boolean moveBrickDown()`
-- `boolean moveBrickLeft()`
-- `boolean moveBrickRight()`
-- `boolean rotateLeftBrick()`
-- `ViewData getViewData()`
-
-**`ClearableBoard`** - Row clearing operations:
-- `void mergeBrickToBackground()`
-- `ClearRow clearRows()`
-- `int[][] getBoardMatrix()`
-
-**`SpawnableBoard`** - Brick spawning operations:
-- `boolean trySpawnNewBrick()`
-- `void newGame()`
-
-**`ScorableBoard`** - Score access:
-- `Score getScore()`
-
-**Main Interface** (Composition of segregated interfaces):
-```java
-public interface Board extends MovableBoard, ClearableBoard, 
-                              SpawnableBoard, ScorableBoard {
-    // All methods inherited from segregated interfaces
-    // No additional methods defined here
-}
-```
-
-**Benefits**:
-- **Interface Segregation Principle**: Clients depend only on interfaces they need
-  - Example: `InputHandler` only needs `MovableBoard` methods
-  - Example: Row clearing logic only needs `ClearableBoard` methods
-- Easier to create mock boards for testing (can mock only needed interfaces)
-- Clear separation of concerns (each interface has single responsibility)
-- More flexible for future board implementations
-- Reduces coupling between components
-
-### Commit Details
-- **Commit**: `dec9e11`
-- **Date**: October 30, 2025
-- **Message**: "refactor(ui): enforce single-responsibility across UI components"
-- **Files Changed**: 5 files (ColorMapper.java, GameTimer.java, GameViewModel.java, GuiController.java, InputHandler.java)
+**Result**: Each class now focuses on doing one thing well, which makes the code easier to test and maintain.
 
 ---
 
-## 4. Refactoring: Design Patterns
+### 3. Design Patterns Implementation
 
-### 4.1 Strategy Pattern
+#### 3.1 Strategy Pattern
+**Color Strategy** (`com.comp2042.ui.color`):
+- Replaced 10-case switch statement with polymorphic strategy selection
+- 9 concrete strategies: `AquaColorStrategy`, `BlueVioletColorStrategy`, `DarkGreenColorStrategy`, `YellowColorStrategy`, `RedColorStrategy`, `BeigeColorStrategy`, `BurlyWoodColorStrategy`, `TransparentColorStrategy`, `WhiteColorStrategy`
+- `ColorStrategyRegistry` uses HashMap for efficient strategy lookup
+- **Benefit**: New colors can be added by creating new strategy classes without changing existing code
 
-#### 4.1.1 Color Strategy
-**Implementation**: `com.comp2042.ui.color.ColorStrategy`
+**Level Strategy** (`com.comp2042.game.level`):
+- `LevelStrategy` interface with `DefaultLevelStrategy` implementation
+- Allows different level progression schemes to be swapped
+- **Benefit**: Makes it easy to experiment with different difficulty progression schemes
 
-**Purpose**: Replace switch statement for color mapping with polymorphic strategy selection
+#### 3.2 Factory Pattern
+**BrickGeneratorFactory** (`com.comp2042.game.bricks`):
+- Decouples `SimpleBoard` from concrete `RandomBrickGenerator`
+- Factory creates generators via `createDefault()` method
+- **Benefit**: Makes it easy to swap in different brick generators for testing or implementing different randomization systems
 
-**Structure**:
-- **Interface**: `ColorStrategy` with `getColor()` method
-- **Concrete Strategies**: 8 classes (AquaColorStrategy, RedColorStrategy, etc.)
-- **Registry**: `ColorStrategyRegistry` manages strategy selection
-- **Context**: `ColorMapper` uses registry to get appropriate strategy
+#### 3.3 Command Pattern
+**MoveCommand Interface** (`com.comp2042.game.controller.commands`):
+- Encapsulates move operations as objects
+- Concrete commands: `LeftMoveCommand`, `RightMoveCommand`, `RotateMoveCommand`, `DownMoveCommand`, `HardDropMoveCommand`
+- **Benefit**: Eliminates nested if-else blocks, makes each move type independently testable, and makes it easy to add new types of moves
 
-**Benefits**:
-- Open/Closed Principle: New colors added without modifying existing code
-- Eliminates large switch statement
-- Each color strategy is independently testable
+#### 3.4 Observer Pattern
+**JavaFX Properties**:
+- `Score.scoreProperty()` bound to UI label
+- `LevelManager.levelProperty()` bound to UI label
+- `LinesClearedTracker.linesProperty()` observed by `LevelManager`
+- **Benefit**: The UI updates automatically without needing to manually call refresh methods
 
-#### 4.1.2 Level Strategy
-**Implementation**: `com.comp2042.game.level.LevelStrategy`
+#### 3.5 Registry Pattern
+**ColorStrategyRegistry**:
+- Centralized management of color strategies
+- HashMap-based lookup for efficient strategy retrieval
+- **Benefit**: Cleaner than if-else chains, easy to extend
 
-**Purpose**: Allow different level progression schemes to be swapped
+---
 
-**Structure**:
-- **Interface**: `LevelStrategy` with `getLevel(int levelNumber)` method
-- **Concrete Strategy**: `DefaultLevelStrategy` provides predefined level configurations
-- **Context**: `LevelManager` uses strategy to retrieve level configurations
+### 4. Interface Segregation Principle (ISP)
+**Description**: Segregated the monolithic `Board` interface into focused sub-interfaces.
 
-**Benefits**:
-- Easy to add new level progression schemes (e.g., exponential, custom difficulty curves)
-- Level configuration logic separated from level management
-- Testable in isolation
+**Segregated Interfaces**:
+- `MovableBoard` - Movement operations (move left/right/down, rotate)
+- `ClearableBoard` - Row clearing operations (merge, clear rows)
+- `SpawnableBoard` - Brick spawning operations (spawn, new game)
+- `ScorableBoard` - Score access
 
-### 4.2 Factory Pattern
+**Main Interface**: `Board` extends all segregated interfaces for complete functionality.
 
-#### 4.2.1 BrickGeneratorFactory
-**Implementation**: `com.comp2042.game.bricks.BrickGeneratorFactory`
+**Benefit**: Different parts of the code only need to depend on the specific interface methods they actually use (e.g., `InputHandler` only needs the movement methods).
 
-**Purpose**: Decouple `SimpleBoard` from concrete `RandomBrickGenerator` implementation
+---
 
-**Structure**:
-- **Factory Class**: `BrickGeneratorFactory` with `createDefault()` method
-- **Product Interface**: `BrickGenerator`
-- **Concrete Product**: `RandomBrickGenerator`
-
-**Benefits**:
-- Dependency Inversion: Board depends on interface, not concrete class
-- Easy to swap generators (e.g., bag system, debug sequences)
-- Better testability (can inject mock generators)
-
-### 4.3 Command Pattern
-
-**Implementation**: `com.comp2042.game.controller.commands.MoveCommand`
-
-**Purpose**: Encapsulate move operations as objects, eliminating nested conditionals
-
-**Structure**:
-- **Command Interface**: `MoveCommand` with `execute()` method
-- **Concrete Commands**:
-  - `LeftMoveCommand`
-  - `RightMoveCommand`
-  - `RotateMoveCommand`
-  - `DownMoveCommand` (encapsulates complex landing logic)
-  - `HardDropMoveCommand` (instant drop to landing position)
-
-**Benefits**:
-- Eliminates nested conditionals in `GameController`
-- Each command is independently testable
-- Easy to add new move types (e.g., hard drop)
-- Commands can be queued, undone, or logged
-- Open/Closed Principle: New commands added without modifying controller
-
-**Example**:
-```java
-// Before: Nested conditionals in GameController
-if (event.getType() == EventType.LEFT) {
-    // left movement logic
-} else if (event.getType() == EventType.RIGHT) {
-    // right movement logic
-}
-
-// After: Polymorphic command execution
-MoveCommand command = new LeftMoveCommand(board);
-command.execute();
-```
-
-### 4.4 Observer Pattern
-
-**Implementation**: JavaFX `IntegerProperty` for reactive updates
-
-**Purpose**: Enable automatic UI updates when game state changes
-
-**Usage**:
-- **Score**: `Score.scoreProperty()` bound to UI label
-- **Level**: `LevelManager.levelProperty()` bound to UI label
-- **Lines Cleared**: `LinesClearedTracker.linesProperty()` observed by `LevelManager`
-
-**Benefits**:
-- Automatic UI synchronization
-- Loose coupling: Score/Level don't need to know about UI
-- Reactive updates without manual refresh calls
-
-### 4.5 Dependency Injection
-
-**Implementation**: Constructor injection in `GameController`, `SimpleBoard`, and `LevelManager`
-
-**Purpose**: Reduce coupling, improve testability, and enable flexible configuration
+### 5. Dependency Injection
+**Description**: Reduced coupling by injecting dependencies via constructors.
 
 **Examples**:
+- **GameController**: Accepts `Board` interface (not concrete `SimpleBoard`)
+- **SimpleBoard**: Uses `BrickGeneratorFactory` for generator creation
+- **LevelManager**: Accepts `LinesClearedTracker` and `LevelStrategy` via constructor
 
-**1. GameController - Board Injection**:
-```java
-// Before: Tight coupling to SimpleBoard
-public class GameController {
-    private SimpleBoard board = new SimpleBoard(25, 10);
-}
-
-// After: Depends on Board interface
-public class GameController {
-    private final Board board;
-    
-    public GameController(GuiController c, Board board) {
-        this.board = board; // Injected via constructor
-    }
-}
-
-// In Main.java - dependency is created and injected
-Board board = new SimpleBoard(25, 10, generatorFactory);
-new GameController(c, board);
-```
-
-**2. SimpleBoard - Factory Injection**:
-```java
-// Before: Direct instantiation of generator
-public SimpleBoard(int width, int height) {
-    this.brickGenerator = new RandomBrickGenerator(); // Tight coupling
-}
-
-// After: Uses factory (injected via method call)
-public SimpleBoard(int width, int height) {
-    this.brickGenerator = BrickGeneratorFactory.createDefault();
-}
-```
-
-**3. LevelManager - Strategy and Tracker Injection**:
-```java
-public class LevelManager {
-    private final LinesClearedTracker linesTracker;
-    private final LevelStrategy levelStrategy;
-    
-    public LevelManager(LinesClearedTracker linesTracker, 
-                       LevelStrategy levelStrategy) {
-        this.linesTracker = linesTracker; // Injected
-        this.levelStrategy = levelStrategy; // Injected
-    }
-}
-```
-
-**Benefits**:
-- **Dependency Inversion Principle**: Depend on abstractions (interfaces), not concretions
-- **Testability**: Easy to inject mocks for unit testing
-- **Flexibility**: Can swap implementations without code changes
-- **Loose Coupling**: Components don't create their dependencies
-- **Configuration**: Easy to configure different setups (e.g., different generators, strategies)
-
-### Commit Details
-- **Commit**: `c577acc` (merge commit)
-- **Date**: November 2, 2025
-- **Message**: "refactor: implement dependency injection and factory patterns"
-- **Files Changed**: 13 files including Main.java, GameController.java, SimpleBoard.java, BrickGeneratorFactory.java
+**Benefit**: Makes testing easier by allowing mock objects to be injected, and reduces coupling between classes.
 
 ---
 
-## 5. Refactoring: Meaningful JUnit Tests
+### 6. Bug Fixes
 
-### Test Structure
-All tests located in `src/test/java/com/comp2042/` mirroring main package structure.
+#### 6.1 Input Latency Fix
+**Problem**: Significant delay between key press and piece movement.
 
-### Test Coverage Summary
-- **31 test files** created
-- **189+ test methods** (`@Test` annotations)
-- **Coverage areas**: Bricks, Operations, Score, Board, Controller, Commands, Data, Events, Level system
-- **Test Framework**: JUnit 5 (Jupiter) with Mockito for mocking
-- **Build Configuration**: Maven Surefire plugin configured for JUnit Platform
-- **Run Command**: `./mvnw test`
+**Solution**: Added callback parameter to `InputHandler`. Now captures `ViewData` from events and immediately calls `GuiController.refreshBrick()`.
 
-### Test Files Created:
+**Result**: The UI now updates instantly when keys are pressed, eliminating the lag.
 
-#### 5.1 MatrixOperationsTest
-**File**: `src/test/java/com/comp2042/game/operations/MatrixOperationsTest.java`
+#### 6.2 Score Display Fix
+**Problem**: Score was never displayed despite `Score` class exposing `IntegerProperty`.
 
-**Coverage**:
-- `intersect()`: Collision detection logic
-- `merge()`: Merging brick into board matrix
-- `checkRemoving()`: Row clearing detection and removal
-- `copy()`: Matrix copying functionality
+**Solution**: Added `scoreLabel` to FXML and implemented `bindScore()` in `GuiController`.
 
-**Importance**: These operations are critical for gameplay correctness - bugs here cause visual glitches and gameplay issues.
+**Result**: The score now displays properly and updates in real-time.
 
-#### 5.2 ScoreTest
-**File**: `src/test/java/com/comp2042/game/score/ScoreTest.java`
+#### 6.3 Method Naming Clarification
+**Problem**: `createNewBrick()` returned `true` on collision (failure), which was counterintuitive.
 
-**Coverage**:
-- Score increment logic
-- Score property binding
-- Score reset functionality
+**Solution**: Renamed to `trySpawnNewBrick()` to clearly indicate it's an attempt that may fail.
 
-#### 5.3 BrickRotatorTest
-**File**: `src/test/java/com/comp2042/game/bricks/BrickRotatorTest.java`
-
-**Coverage**:
-- Rotation logic for all brick types
-- Shape transformation correctness
-- Next shape calculation
-
-#### 5.4 RandomBrickGeneratorTest
-**File**: `src/test/java/com/comp2042/game/bricks/RandomBrickGeneratorTest.java`
-
-**Coverage**:
-- Random brick generation
-- Next brick preview functionality
-- Generator state management
-
-#### 5.5 BrickGeneratorFactoryTest
-**File**: `src/test/java/com/comp2042/game/bricks/BrickGeneratorFactoryTest.java`
-
-**Coverage**:
-- Factory creation method
-- Returned generator type
-- Factory pattern correctness
-
-#### 5.6 Individual Brick Tests
-**Files**: `IBrickTest.java`, `JBrickTest.java`, `LBrickTest.java`, `OBrickTest.java`, `SBrickTest.java`, `TBrickTest.java`, `ZBrickTest.java`
-
-**Coverage**:
-- Shape correctness for each brick type
-- Color codes match expected values
-- Initial positions correct
-
-#### 5.7 Controller and Command Tests
-**Files**: `GameControllerTest.java`, `DownMoveCommandTest.java`, `LeftMoveCommandTest.java`, `RightMoveCommandTest.java`, `RotateMoveCommandTest.java`, `HardDropMoveCommandTest.java`
-
-**Coverage**:
-- Command execution correctness
-- Move operations behavior
-- Hard drop functionality (2 points per cell)
-- Game controller event handling
-
-#### 5.8 Board Tests
-**Files**: `SimpleBoardTest.java`, `GhostBlockTest.java`
-
-**Coverage**:
-- Board operations (move, rotate, clear)
-- Ghost piece calculation
-- Collision detection
-- Game state management
-
-#### 5.9 Level System Tests
-**Files**: `LevelTest.java`, `LevelManagerTest.java`, `DefaultLevelStrategyTest.java`, `LinesClearedTrackerTest.java`
-
-**Coverage**:
-- Level progression (every 5 lines)
-- Score multipliers (1.0x to 2.5x)
-- Drop speed scaling (400ms to 60ms)
-- Lines tracking
-
-#### 5.10 Data and Event Tests
-**Files**: `ViewDataTest.java`, `DownDataTest.java`, `ClearRowTest.java`, `NextShapeInfoTest.java`, `MoveEventTest.java`, `EventTypeTest.java`, `EventSourceTest.java`
-
-**Coverage**:
-- Data object construction
-- Immutability verification
-- Event creation and properties
-
-### Test Configuration
-- **Framework**: JUnit 5 (Jupiter) - `junit-jupiter-engine:5.10.0`
-- **Mocking**: Mockito - `mockito-core:5.14.2`, `mockito-junit-jupiter:5.14.2`
-- **Maven Plugin**: `maven-surefire-plugin:3.5.2` configured for JUnit Platform
-- **Compiler**: Java 23 with release flag
-- **Run Command**: `./mvnw test`
-
-### Commit Details
-- **Initial Commit**: `c0e0ebc`
-- **Date**: November 12, 2025
-- **Message**: "test: add initial JUnit 5 suite (bricks, operations, score)"
-- **Subsequent Commits**:
-  - `a0b3ee4` (Nov 20): "test: add JUnit tests for ghost piece feature"
-  - `12cb666` (Nov 20): "build: add Mockito dependencies for unit testing"
-  - `6593775` (Nov 20): "test: add comprehensive JUnit test suite for game components"
-  - `0419cd8` (Nov 25): "test: Add comprehensive tests for data package and HardDropMoveCommand"
+**Result**: The code is now clearer about what it's trying to do.
 
 ---
 
-## 6. Refactoring: Fixing Bugs
+### 7. New Gameplay Features
 
-### 6.1 Input Latency Fix
-**Problem**: Significant delay between key press and piece movement/rotation
-
-**Root Cause**: `InputHandler` was calling event listeners but not immediately refreshing the UI. The `ViewData` returned from events was being ignored.
-
-**Solution**: 
-- Added callback parameter `Consumer<ViewData> onBrickMoved` to `InputHandler`
-- `InputHandler` now captures returned `ViewData` and immediately calls callback
-- `GuiController` passes `this::refreshBrick` as callback
-
-**Result**: Immediate UI updates on key press, eliminating latency.
-
-### Commit Details
-- **Commit**: `ce55a4d`
-- **Date**: November 19, 2025
-- **Message**: "fix: eliminate input latency by refreshing UI immediately after moves"
-
-### 6.2 Score Binding Fix
-**Problem**: Score was never displayed in UI despite `Score` class exposing `IntegerProperty`
-
-**Solution**:
-- Added `scoreLabel` to FXML layout
-- Implemented `bindScore()` method in `GuiController`
-- Bound score property to label using JavaFX bindings
-
-**Result**: Score now displays and updates automatically.
-
-### Commit Details
-- **Commit**: `6b4f6c0`
-- **Date**: October 28, 2025
-- **Message**: "refactor: basic maintenance and bug fixes"
-- **Files Changed**: 7 files (Board.java, SimpleBoard.java, GameController.java, MatrixOperations.java, GuiController.java, gameLayout.fxml, window_style.css)
-
-### 6.3 Method Naming Clarification
-**Problem**: `createNewBrick()` returned `true` on failure (collision), which was counterintuitive
-
-**Solution**: Renamed to `trySpawnNewBrick()` to clearly indicate it's an attempt that may fail
-
-**Result**: Code is more readable and intention-revealing.
-
----
-
-## 7. New Features: Gameplay Controls
-
-### 7.1 Hard Drop
-**Implementation**: `HardDropMoveCommand` and `GameController.onHardDropEvent()`
-
-**Purpose**: Allow players to instantly drop the current piece to its landing position (ghost position)
-
-**Controls**: **Space** key
+#### 7.1 Hard Drop (Space Bar)
+**Description**: Instantly drops the current piece to its landing position (ghost position).
 
 **Features**:
-- Piece instantly moves to landing position (ghost position)
+- Piece moves to landing position immediately
 - Awards **2 points per cell dropped** as bonus
-- Triggers normal landing logic (merge, clear rows, scoring)
-- Applies level-based score multipliers to cleared lines
+- Triggers normal landing logic (merge, clear rows, spawn new piece)
+- Applies level-based score multipliers
 - Shows score notifications for cleared lines
-- Updates ghost piece after drop
 
-**Implementation Details**:
-```java
-public class HardDropMoveCommand implements MoveCommand {
-    @Override
-    public ViewData execute() {
-        int cellsDropped = 0;
-        
-        // Move down until brick can't move anymore
-        while (board.moveBrickDown()) {
-            cellsDropped++;
-        }
-        
-        // Award 2 points per cell dropped
-        if (cellsDropped > 0) {
-            board.getScore().add(cellsDropped * 2);
-        }
-        
-        // Handle landing (merge, clear, spawn)
-        handleBrickLanded();
-        
-        return board.getViewData();
-    }
-}
-```
+**Implementation**: `HardDropMoveCommand` using Command Pattern.
 
-**Design**: 
-- Uses Command Pattern (`HardDropMoveCommand`) to encapsulate instant drop logic
-- Maintains consistency with other move commands (`LeftMoveCommand`, `RightMoveCommand`, etc.)
-- Follows Single Responsibility - only handles hard drop operation
-- Integrates with level system for score multipliers
+**Controls**: Press **SPACE** key.
 
-### Commit Details
-- **Commit**: `8b628d3`
-- **Date**: November 20, 2025
-- **Message**: "feat: add hard drop feature with SPACE bar"
-
-### 7.2 Pause/Resume
-**Implementation**: `GuiController.togglePause()`
-
-**Purpose**: Allow players to pause and resume the game mid-play
-
-**Controls**: **P** key
+#### 7.2 Pause/Resume (P Key)
+**Description**: Allows players to pause and resume the game mid-play.
 
 **Features**:
 - Pauses game timer (stops automatic piece dropping)
-- Shows "PAUSED" notification overlay on screen
-- Prevents all movement input during pause (LEFT, RIGHT, UP, DOWN, SPACE blocked)
+- Shows "PAUSED" overlay with interactive buttons
+- Prevents all movement input during pause
 - Resumes with current level speed on unpause
 - Cannot pause when game is over
-- Pressing P again resumes the game
 
-**Implementation Details**:
-```java
-public void togglePause() {
-    if (isGameOver.getValue() == Boolean.TRUE) {
-        return; // Don't allow pause when game is over
-    }
-    
-    boolean currentPauseState = isPause.getValue();
-    isPause.setValue(!currentPauseState);
-    
-    if (isPause.getValue()) {
-        // Pausing
-        gameTimer.stop();
-        showPauseNotification();
-    } else {
-        // Resuming
-        startTimerWithCurrentLevelSpeed();
-        hidePauseNotification();
-    }
-}
-```
+**Implementation**: `GuiController.togglePause()` with `BooleanProperty` for state management.
 
-**Design**: 
-- Uses JavaFX `BooleanProperty` for pause state (reactive updates)
-- Integrated with `InputHandler` for input blocking
-- Integrated with `GameTimer` for timer control
-- Clean state management without complex flags
+**Controls**: Press **P** key to toggle pause.
 
-### Commit Details
-- **Commit**: `e55a350`
-- **Date**: November 24, 2025
-- **Message**: "refactor: Apply pause game functionality with P key"
+#### 7.3 Level System
+**Description**: Comprehensive level progression system with adaptive difficulty.
 
-### 7.3 Game Controls Summary
+**Features**:
+- **Level Progression**: Advance 1 level every 5 lines cleared
+- **Drop Speed Scaling**: Progressively faster piece drop from Level 1 to Level 10+
+- **Score Multipliers**: Increasing score multipliers from 1.0x to 2.5x as levels progress
+- **Visual Feedback**: "LEVEL X!" notification on level up
+- **UI Display**: Current level shown in game interface
+
+**Components**:
+- `Level`: Immutable configuration object (level number, drop speed, multiplier)
+- `LinesClearedTracker`: Tracks total lines cleared (Observable)
+- `LevelStrategy`: Strategy interface for level configuration
+- `DefaultLevelStrategy`: Provides predefined level configurations
+- `LevelManager`: Manages level progression based on lines cleared
+
+**Design**: Uses Strategy Pattern for flexible progression schemes and Observer Pattern for automatic UI updates.
+
+#### 7.4 Ghost Piece
+**Description**: Semi-transparent preview showing where the current piece will land.
+
+**Features**:
+- **Real-Time Updates**: Ghost position updates on every move/rotation
+- **Visual Design**: Semi-transparent appearance for clear visibility without obscuring board
+- **Positioning**: Same X as current piece, Y at calculated landing position
+- **Styling**: Rounded corners matching active piece style
+
+**Implementation**:
+- `ViewData` enhanced with `ghostX` and `ghostY` fields
+- `SimpleBoard.findDropY()` calculates landing position via collision simulation
+- `ColorMapper.getGhostFillColor()` provides semi-transparent colors
+- `GuiController` renders ghost via dedicated `ghostPanel` GridPane
+
+**Benefit**: Helps players with strategic piece placement decisions.
+
+#### 7.5 High Score Tracking
+**Description**: Automatic high score tracking with persistent storage.
+
+**Features**:
+- Automatically tracks when the current score beats the high score
+- Saves high scores to a file (`~/.tetris/highscore.dat`) so they persist between game sessions
+- Shows the high score in the UI throughout gameplay
+- Displays a "NEW HIGH SCORE!" notification when you beat your previous best
+- High scores are preserved even after closing and reopening the game
+
+**Implementation**:
+- `HighScoreManager`: Manages tracking, detection, and file I/O
+- Uses JavaFX `IntegerProperty` for reactive UI binding
+- Binary file format (DataOutputStream/DataInputStream) for efficient storage
+
+**Design**: Uses Observer Pattern for automatic detection and file I/O for persistence.
+
+---
+
+### 8. Comprehensive JUnit Test Suite
+**Description**: 189+ test methods across 31 test files covering all major components.
+
+**Test Coverage**:
+- **Brick Tests**: All 7 brick types (I, J, L, O, S, T, Z) with shape and color verification
+- **Operations Tests**: MatrixOperations (collision, merge, row clearing)
+- **Controller Tests**: GameController and all 5 command classes
+- **Board Tests**: SimpleBoard operations and ghost piece calculation
+- **Level System Tests**: Level progression, score multipliers, lines tracking
+- **Data Tests**: All DTOs (ViewData, DownData, ClearRow, NextShapeInfo)
+- **Event Tests**: Event creation, types, and event source
+- **Score Tests**: Score increment, property binding, reset
+
+**Frameworks**: JUnit 5 (Jupiter), Mockito for mocking
+
+**Run Command**: `./mvnw test`
+
+---
+
+### 9. SOLID Principles Applied Throughout
+
+- **Single Responsibility Principle**: Each class has one reason to change (e.g., `InputHandler`, `GameTimer`, `GameViewModel`)
+- **Open/Closed Principle**: Open for extension via strategies/commands, closed for modification
+- **Liskov Substitution Principle**: All implementations substitutable for their interfaces
+- **Interface Segregation Principle**: Segregated `Board` into focused interfaces
+- **Dependency Inversion Principle**: Depend on abstractions (interfaces), not concretions (classes)
+
+---
+
+### 10. Complete Game Controls
 
 | Key | Action | Description |
 |-----|--------|-------------|
 | **LEFT** / **A** | Move Left | Move piece one cell left |
 | **RIGHT** / **D** | Move Right | Move piece one cell right |
 | **UP** / **W** | Rotate | Rotate piece 90° counterclockwise |
-| **DOWN** / **S** | Soft Drop | Move piece down one cell (normal speed) |
+| **DOWN** / **S** | Soft Drop | Move piece down one cell |
 | **SPACE** | Hard Drop | Instantly drop piece to landing position (+2 pts/cell) |
 | **P** | Pause/Resume | Toggle pause state |
 | **N** | New Game | Start a new game (anytime) |
 
 ---
 
-## 8. New Features: Level System
+## Implemented but Not Working Properly
 
-### 8.1 Overview
-Implemented a comprehensive level progression system with adaptive difficulty. Players advance levels every 5 lines cleared, with increasing drop speed and score multipliers.
+**None** - All implemented features are fully functional and tested.
 
-### 8.2 Components
+All features have been thoroughly tested with:
+- Manual gameplay testing
+- JUnit test suite (189+ tests)
+- Edge case verification
+- Input validation
 
-#### 8.2.1 Level
-**File**: `com.comp2042.game.level.Level.java`
-
-**Purpose**: Immutable configuration object representing a level
-
-**Properties**:
-- `levelNumber`: Current level (1-10+)
-- `dropSpeedMs`: Automatic drop speed in milliseconds (400ms → 60ms)
-- `scoreMultiplier`: Score multiplier for line clears (1.0x → 2.5x)
-
-**Design**: Immutable class ensuring thread safety and predictable behavior.
-
-#### 8.2.2 LinesClearedTracker
-**File**: `com.comp2042.game.level.LinesClearedTracker.java`
-
-**Purpose**: Tracks total lines cleared during the game
-
-**Features**:
-- Uses JavaFX `IntegerProperty` for reactive updates
-- `addLines(int lines)`: Increments total
-- `reset()`: Resets to zero on new game
-- `linesProperty()`: Exposes property for binding
-
-**Design Pattern**: Observer Pattern (via JavaFX properties)
-
-#### 8.2.3 LevelStrategy
-**File**: `com.comp2042.game.level.LevelStrategy.java`
-
-**Purpose**: Strategy interface for level configuration retrieval
-
-**Design Pattern**: Strategy Pattern
-
-**Benefits**: Allows different progression schemes (linear, exponential, custom) without modifying core logic.
-
-#### 8.2.4 DefaultLevelStrategy
-**File**: `com.comp2042.game.level.DefaultLevelStrategy.java`
-
-**Purpose**: Default implementation providing predefined level configurations
-
-**Level Configurations**:
-- Level 1: 400ms drop speed, 1.0x multiplier
-- Level 2: 350ms drop speed, 1.2x multiplier
-- Level 3: 300ms drop speed, 1.5x multiplier
-- Level 4: 250ms drop speed, 1.8x multiplier
-- Level 5: 200ms drop speed, 2.0x multiplier
-- Level 6: 150ms drop speed, 2.2x multiplier
-- Level 7: 120ms drop speed, 2.3x multiplier
-- Level 8: 100ms drop speed, 2.4x multiplier
-- Level 9: 80ms drop speed, 2.5x multiplier
-- Level 10+: 60ms drop speed, 2.5x multiplier (capped)
-
-#### 8.2.5 LevelManager
-**File**: `com.comp2042.game.level.LevelManager.java`
-
-**Purpose**: Manages level progression based on lines cleared
-
-**Features**:
-- Tracks current level
-- Updates level every 5 lines cleared
-- Exposes level property for UI binding
-- Provides current level configuration
-
-**Integration**:
-- Observes `LinesClearedTracker` for line count changes
-- Notifies `GuiController` on level up
-- Used by `DownMoveCommand` to apply score multipliers
-
-### 8.3 Integration Points
-
-#### 8.3.1 SimpleBoard
-- Initializes `LinesClearedTracker` and `LevelManager`
-- Resets both on `newGame()`
-- Provides accessors for `LevelManager`
-
-#### 8.3.2 DownMoveCommand
-- Tracks lines cleared via `LinesClearedTracker`
-- Updates level via `LevelManager.updateLevel()`
-- Applies level-based score multiplier
-- Triggers `GuiController.onLevelUp()` notification
-
-#### 8.3.3 GameController
-- Binds `LevelManager` to `GuiController` if board is `SimpleBoard`
-- Enables level display in UI
-
-#### 8.3.4 GuiController
-- Displays current level in UI label
-- Shows "LEVEL X!" notification on level up
-- Updates game timer speed based on current level
-- Binds level property to label for automatic updates
-
-### 8.4 UI Changes
-- Added `levelLabel` to `gameLayout.fxml`
-- Level displayed as "Level: X" next to score
-- Level-up notifications appear similar to score notifications
-
-### 8.5 Design Benefits
-- **Strategy Pattern**: Easy to swap level progression schemes
-- **Observer Pattern**: Automatic UI updates via property binding
-- **Single Responsibility**: Each component has one clear purpose
-- **Dependency Inversion**: `LevelManager` depends on `LevelStrategy` interface
-- **Encapsulation**: Level configuration encapsulated in immutable `Level` objects
-
-### Commit Details
-- **Commit**: `180a32f`
-- **Date**: November 18, 2025
-- **Message**: "Additional Features: Implement level system"
-- **Files Changed**: Added Level.java, LevelManager.java, LevelStrategy.java, DefaultLevelStrategy.java, LinesClearedTracker.java; Modified SimpleBoard.java, DownMoveCommand.java, GameController.java, GuiController.java, gameLayout.fxml
+No known bugs or issues at this time.
 
 ---
 
-## 9. New Features: Ghost Piece
+## Features Not Implemented
 
-### 9.1 Overview
-Ghost piece feature shows players where their current piece will land, helping with placement decisions. The ghost appears as a semi-transparent preview (30% opacity) of the piece at its landing position, updating in real-time as the player moves or rotates the piece.
+The following features were considered but not implemented due to time constraints and scope prioritization:
 
-### 9.2 Components
+### 1. Next Piece Preview Display
+**Reason**: While the data for the next piece is already available in `ViewData` (via `NextShapeInfo`), implementing the UI visualization requires additional FXML layout work and GridPane management. The underlying logic exists, but the visual component was deprioritized in favor of more impactful features (ghost piece, hard drop).
 
-#### 9.2.1 ViewData Enhancement
-**File**: `com.comp2042.game.data.ViewData.java`
+**Complexity**: Low - mainly UI work
+**Status**: Backend ready, frontend not implemented
 
-**Changes**:
-- Added `ghostX` and `ghostY` fields to store ghost piece position
-- Added `getGhostX()` and `getGhostY()` accessor methods
-- Updated constructor to accept ghost position parameters
+### 2. Hold Piece Mechanism
+**Reason**: This feature would require significant changes to the game state management:
+- New data structure to store held piece
+- Logic to swap current piece with held piece
+- UI panel for displaying held piece
+- Input handling for hold action (e.g., C key)
+- Rules for preventing hold abuse (one hold per piece drop)
 
-**Design**: Ghost position calculated in `SimpleBoard` and passed through `ViewData` to UI layer, maintaining separation of concerns.
+**Complexity**: Medium - requires game logic changes
+**Status**: Not started
 
-#### 9.2.2 SimpleBoard Ghost Calculation
-**File**: `com.comp2042.game.board.SimpleBoard.java`
+### 3. Combo System
+**Reason**: A combo system rewarding consecutive line clears (e.g., Tetris → Tetris) would need:
+- Tracking consecutive clears without placing non-clearing pieces
+- Bonus score calculation logic
+- Visual feedback for combo chains
+- Balance testing to avoid score inflation
 
-**New Method**: `findDropY(int startX, int startY)`
+**Complexity**: Medium - scoring system extension
+**Status**: Not started
 
-**Purpose**: Calculates where the piece will land by simulating it falling down
+### 4. Sound Effects and Music
+**Reason**: Audio implementation requires:
+- JavaFX Media library integration
+- Audio file assets (sound effects, background music)
+- Volume controls and mute functionality
+- Performance considerations (audio playback overhead)
+- Licensing for audio assets
 
-**Algorithm**:
-1. Start from current piece position
-2. Increment Y position downward
-3. Check for collision using `MatrixOperations.intersect()`
-4. Stop when collision detected
-5. Return the landing Y position
+**Complexity**: Low to Medium - mainly asset management
+**Status**: Not started
 
-**Integration**:
-- Called in `getViewData()` method
-- Ghost X matches current piece X (only Y changes)
-- Ghost Y calculated via `findDropY()`
-- Both passed to `ViewData` constructor
+### 5. Multiplayer Mode
+**Reason**: Multiplayer would require major architectural changes:
+- Network communication (sockets or web API)
+- Game state synchronization
+- Lobby system
+- Attack mechanisms (sending garbage lines)
+- Significantly increases scope beyond a refactoring project
 
-**Code Example**:
-```java
-private int findDropY(int startX, int startY) {
-    int[][] shape = brickRotator.getCurrentShape();
-    int ghostY = startY;
+**Complexity**: High - fundamental architecture change
+**Status**: Not feasible for this project
+
+### 6. Customizable Key Bindings
+**Reason**: While WASD and arrow keys are both supported, allowing full key customization would require:
+- Settings UI for key configuration
+- Persistent storage of key bindings
+- Key conflict detection
+- Reset to defaults option
+
+**Complexity**: Low to Medium - mainly UI and persistence
+**Status**: Not started (current controls deemed sufficient)
+
+### 7. Different Game Modes
+**Reason**: Alternative modes (e.g., Sprint mode, Marathon mode, Zen mode) would need:
+- Mode selection UI
+- Different win/lose conditions per mode
+- Mode-specific scoring and progression
+- Additional testing for each mode
+
+**Complexity**: Medium - multiple feature implementations
+**Status**: Not started
+
+**Why These Weren't Prioritized**: The focus was on getting the core refactoring work done properly (SOLID principles, design patterns) and implementing the most impactful gameplay features first. The features that were implemented are fully working and tested.
+
+---
+
+## New Java Classes
+
+### Application Entry Point
+1. **`com.comp2042.app.Main`**
+   - Application entry point
+   - Initializes JavaFX application and launches GUI
+   - Sets up dependency injection (creates Board, GameController)
+
+### UI Package (`com.comp2042.ui`)
+2. **`com.comp2042.ui.InputHandler`**
+   - Handles all keyboard input events
+   - Processes arrow keys, WASD, Space, P, N keys
+   - Delegates to event listener callbacks
+   
+3. **`com.comp2042.ui.GameTimer`**
+   - Manages game loop timing (JavaFX Timeline)
+   - Controls automatic piece dropping
+   - Adjusts speed based on current level
+   
+4. **`com.comp2042.ui.GameViewModel`**
+   - Handles data-to-UI transformations
+   - Positions brick panels and updates rectangle colors
+   - Calculates ghost piece visual positions
+   
+5. **`com.comp2042.ui.ColorMapper`**
+   - Maps color codes to Paint objects
+   - Provides ghost fill colors (semi-transparent)
+   - Uses ColorStrategyRegistry for polymorphic color selection
+   
+6. **`com.comp2042.ui.NotificationPanel`**
+   - Displays score and level-up notifications
+   - Animated fade-in/fade-out effects
+   
+7. **`com.comp2042.ui.PausePanel`**
+   - Pause screen with interactive buttons
+   - "Resume (P)" and "New Game (N)" buttons
+   
+8. **`com.comp2042.ui.GameOverPanel`**
+   - Game over screen with restart option
+   - Reflection effect for visual polish
+
+### Color Strategy Package (`com.comp2042.ui.color`)
+9. **`com.comp2042.ui.color.ColorStrategy`** (interface)
+   - Strategy interface for color mapping
+   - Methods: `getColorCode()`, `getColor()`
+   
+10. **`com.comp2042.ui.color.ColorStrategyRegistry`**
+    - Registry pattern for managing color strategies
+    - HashMap-based O(1) strategy lookup
     
-    // Loop downward until collision detected
-    while (!MatrixOperations.intersect(currentGameMatrix, shape, startX, ghostY + 1)) {
-        ghostY++;
-    }
+11-19. **Color Strategy Implementations**:
+    - `TransparentColorStrategy` (code 0)
+    - `AquaColorStrategy` (code 1)
+    - `BlueVioletColorStrategy` (code 2)
+    - `DarkGreenColorStrategy` (code 3)
+    - `YellowColorStrategy` (code 4)
+    - `RedColorStrategy` (code 5)
+    - `BeigeColorStrategy` (code 6)
+    - `BurlyWoodColorStrategy` (code 7)
+    - `WhiteColorStrategy` (default/fallback)
+
+### Board Package (`com.comp2042.game.board`)
+20. **`com.comp2042.game.board.Board`** (interface)
+    - Main board interface (extends all segregated interfaces)
     
-    return ghostY;
-}
-```
-
-#### 9.2.3 ColorMapper Ghost Support
-**File**: `com.comp2042.ui.ColorMapper.java`
-
-**New Method**: `getGhostFillColor(int code)`
-
-**Purpose**: Returns semi-transparent version of piece colors for ghost rendering
-
-**Implementation**:
-- Retrieves solid color via `ColorStrategyRegistry`
-- Converts to `Color` object if applicable
-- Creates new `Color` with same RGB but 30% opacity (`GHOST_OPACITY = 0.3`)
-- Returns transparent color for empty cells (code 0)
-
-**Design**: Centralized ghost color logic ensures consistent visual style across all piece types.
-
-#### 9.2.4 GuiController Ghost Rendering
-**File**: `com.comp2042.ui.GuiController.java`
-
-**UI Components**:
-- `@FXML private GridPane ghostPanel`: Ghost piece panel (defined in FXML)
-- `private Rectangle[][] ghostRectangles`: Array of rectangles for ghost piece rendering
-
-**Initialization** (in `initGameView()`):
-1. Creates ghost rectangles matching brick dimensions
-2. Sets initial colors using `ColorMapper.getGhostFillColor()`
-3. Adds rectangles to `ghostPanel`
-4. Positions ghost panel at landing location
-
-**Update Methods**:
-
-**`positionGhostPanel(ViewData brick)`**:
-- Positions ghost panel at `(ghostX, ghostY)` from `ViewData`
-- Uses same positioning formula as active brick panel
-- Updates whenever piece moves or rotates
-
-**`updateGhostRectangles(ViewData brick)`**:
-- Updates ghost rectangle colors based on current piece shape
-- Only non-zero cells (actual piece blocks) are visible
-- Empty cells remain transparent
-- Maintains rounded corners (arcHeight/arcWidth = 9)
-
-**Integration**:
-- Called in `refreshBrick()` method after active brick updates
-- Ghost updates automatically whenever piece moves/rotates
-- Ghost position recalculated on every `getViewData()` call
-
-#### 9.2.5 FXML Layout Update
-**File**: `src/main/resources/gameLayout.fxml`
-
-**Changes**:
-- Added `<GridPane fx:id="ghostPanel" vgap="1" hgap="1"/>` to scene graph
-- Positioned before `brickPanel` so active piece renders on top
-
-### 9.3 Visual Design
-- **Opacity**: 30% (0.3) for clear visibility without obscuring board
-- **Positioning**: Same X as current piece, Y at landing position
-- **Styling**: Rounded corners matching active piece style
-- **Colors**: Semi-transparent versions of piece colors
-- **Update Frequency**: Real-time updates on every move/rotation
-
-### 9.4 Benefits
-- **Improved Gameplay**: Players can see landing position before dropping
-- **Better Placement**: Helps with strategic piece positioning
-- **Visual Feedback**: Clear indication of where piece will land
-- **Non-Intrusive**: Semi-transparent design doesn't obstruct view
-- **Real-Time Updates**: Ghost position updates immediately on movement
-
-### 9.5 Design Patterns & Principles
-- **Separation of Concerns**: Ghost calculation in `SimpleBoard`, rendering in `GuiController`
-- **Single Responsibility**: Each component handles one aspect (calculation, color, rendering)
-- **Reusability**: `ColorMapper.getGhostFillColor()` used consistently
-- **Encapsulation**: Ghost position encapsulated in `ViewData`
-- **Observer Pattern**: Ghost updates automatically via `refreshBrick()` calls
-
-### Commit Details
-- **Primary Implementation**: Implemented across multiple commits as part of Additional-Features branch
-- **Test Addition**: `a0b3ee4` (Nov 20, 2025) - "test: add JUnit tests for ghost piece feature"
-- **Files Modified**: ViewData.java, SimpleBoard.java, ColorMapper.java, GuiController.java, gameLayout.fxml
-- **Test File**: GhostBlockTest.java (13 test methods)
-
----
-
-## 10. New Features: High Score Tracking
-
-### 10.1 Overview
-High score tracking system that automatically saves and loads the player's best score across game sessions. The high score persists to disk and displays prominently in the UI, with special notifications when a new high score is achieved.
-
-### 10.2 Components
-
-#### 10.2.1 HighScoreManager
-**File**: `com.comp2042.game.score.HighScoreManager.java`
-
-**Purpose**: Manages high score persistence, tracking, and automatic updates
-
-**Features**:
-- **Automatic Detection**: Observes current score and automatically detects when beaten
-- **Persistent Storage**: Saves high score to disk in user's home directory (`~/.tetris/highscore.dat`)
-- **Observer Pattern**: Uses JavaFX `IntegerProperty` for reactive UI binding
-- **New High Score Flag**: Tracks if current game achieved new high score
-- **Automatic Loading**: Loads saved high score on game start
-
-**Implementation Details**:
-```java
-public class HighScoreManager {
-    private final IntegerProperty highScore = new SimpleIntegerProperty(0);
-    private boolean isNewHighScore = false;
+21. **`com.comp2042.game.board.MovableBoard`** (interface)
+    - Movement operations interface (ISP)
     
-    public HighScoreManager(Score currentScore) {
-        loadHighScore();
-        
-        // Listen for score changes to detect new high scores
-        currentScore.scoreProperty().addListener((obs, oldVal, newVal) -> {
-            if (newVal.intValue() > highScore.get()) {
-                highScore.set(newVal.intValue());
-                if (!isNewHighScore) {
-                    isNewHighScore = true;
-                }
-            }
-        });
-    }
+22. **`com.comp2042.game.board.ClearableBoard`** (interface)
+    - Row clearing operations interface (ISP)
     
-    public void saveHighScore() {
-        // Save to ~/.tetris/highscore.dat
-        Path highScoreFile = Paths.get(System.getProperty("user.home"), 
-                                       ".tetris", "highscore.dat");
-        // ... write to file ...
-    }
-}
-```
-
-**Design**:
-- **Observer Pattern**: Automatically tracks score changes via JavaFX properties
-- **Single Responsibility**: Only handles high score tracking and persistence
-- **File I/O**: Uses Java NIO for modern file operations
-- **Error Handling**: Gracefully handles missing files or I/O errors
-
-#### 10.2.2 File Storage Format
-**Location**: `~/.tetris/highscore.dat` (user's home directory)
-
-**Format**: Binary file using `DataOutputStream`/`DataInputStream`
-- Single integer value (4 bytes)
-- Simple, efficient storage
-- Platform-independent
-
-**Benefits**:
-- **Persistence**: Survives application restarts
-- **Privacy**: Stored in user's home directory
-- **Lightweight**: Only 4 bytes per high score
-- **Fast**: Binary format for quick read/write
-
-### 10.3 Integration Points
-
-#### 10.3.1 SimpleBoard Integration
-- Creates `HighScoreManager` in constructor
-- Passes current `Score` object for observation
-- Provides `getHighScoreManager()` accessor
-- Resets new high score flag on `newGame()`
-
-```java
-public class SimpleBoard implements Board {
-    private final HighScoreManager highScoreManager;
+23. **`com.comp2042.game.board.SpawnableBoard`** (interface)
+    - Brick spawning operations interface (ISP)
     
-    public SimpleBoard(int width, int height) {
-        // ... other initialization ...
-        score = new Score();
-        highScoreManager = new HighScoreManager(score);
-    }
+24. **`com.comp2042.game.board.ScorableBoard`** (interface)
+    - Score access interface (ISP)
     
-    @Override
-    public void newGame() {
-        // ... other resets ...
-        highScoreManager.resetNewHighScoreFlag();
-    }
-}
-```
+25. **`com.comp2042.game.board.SimpleBoard`**
+    - Concrete board implementation
+    - Manages game state (brick position, board matrix, score)
+    - Implements ghost piece calculation
 
-#### 10.3.2 GameController Integration
-- Binds high score to UI via `GuiController.bindHighScore()`
-- Automatic binding when board is `SimpleBoard`
-- No additional logic needed (handled by observer pattern)
-
-#### 10.3.3 GuiController Integration
-**UI Elements**:
-- `@FXML private Label highScoreLabel`: Displays "High Score: X"
-- Positioned below level label in UI
-- Updates automatically via property binding
-
-**New High Score Notification**:
-- Shows "NEW HIGH SCORE!" notification on game over
-- Only displayed if high score was beaten
-- Automatically saves high score to disk
-
-```java
-public void gameOver() {
-    gameTimer.stop();
+### Bricks Package (`com.comp2042.game.bricks`)
+26. **`com.comp2042.game.bricks.Brick`** (interface)
+    - Brick interface defining shape and color methods
     
-    // Check for new high score
-    if (highScoreManager != null && highScoreManager.isNewHighScore()) {
-        NotificationPanel notificationPanel = new NotificationPanel("NEW HIGH SCORE!");
-        groupNotification.getChildren().add(notificationPanel);
-        notificationPanel.showScore(groupNotification.getChildren());
-        highScoreManager.onGameEnd(); // Save high score
-    }
+27. **`com.comp2042.game.bricks.BrickGenerator`** (interface)
+    - Generator interface for producing bricks
     
-    gameOverPanel.setVisible(true);
-    isGameOver.setValue(Boolean.TRUE);
-}
-```
+28. **`com.comp2042.game.bricks.BrickGeneratorFactory`**
+    - Factory for creating brick generators
+    - Decouples board from concrete generator
+    
+29. **`com.comp2042.game.bricks.RandomBrickGenerator`**
+    - Random brick generation implementation
+    - Manages current and next brick
+    
+30-36. **Brick Implementations**:
+    - `IBrick` (I-shaped tetromino)
+    - `JBrick` (J-shaped tetromino)
+    - `LBrick` (L-shaped tetromino)
+    - `OBrick` (O-shaped/square tetromino)
+    - `SBrick` (S-shaped tetromino)
+    - `TBrick` (T-shaped tetromino)
+    - `ZBrick` (Z-shaped tetromino)
 
-### 10.4 UI Changes
+### Controller Package (`com.comp2042.game.controller`)
+37. **`com.comp2042.game.controller.GameController`**
+    - Main game controller
+    - Coordinates between board and UI
+    - Event handling and game flow management
 
-#### High Score Display
-**FXML Layout** (`gameLayout.fxml`):
-- Added `<Label fx:id="highScoreLabel" text="High Score: 0" layoutX="200" layoutY="60" styleClass="score-label"/>`
-- Positioned below level display (Y=60)
-- Uses same style class as score and level labels
+### Commands Package (`com.comp2042.game.controller.commands`)
+38. **`com.comp2042.game.controller.commands.MoveCommand`** (interface)
+    - Command interface for move operations
+    
+39-43. **Command Implementations**:
+    - `LeftMoveCommand` - Move piece left
+    - `RightMoveCommand` - Move piece right
+    - `RotateMoveCommand` - Rotate piece
+    - `DownMoveCommand` - Move piece down (with landing logic)
+    - `HardDropMoveCommand` - Instant drop with bonus points
 
-**Visual Layout**:
-```
-Score: 1234
-Level: 3
-High Score: 5678
-```
+### Data Package (`com.comp2042.game.data`)
+44. **`com.comp2042.game.data.ViewData`**
+    - Immutable DTO for brick view information
+    - Contains position (x, y), shape, ghost position
+    
+45. **`com.comp2042.game.data.DownData`**
+    - Immutable DTO for down move results
+    - Contains moved status, cleared status, rows cleared
+    
+46. **`com.comp2042.game.data.ClearRow`**
+    - Immutable DTO for row clearing results
+    - Contains removed row count and new board matrix
+    
+47. **`com.comp2042.game.data.NextShapeInfo`**
+    - Immutable DTO for next piece preview data
 
-#### Game Over Panel Enhancement
-**File**: `GameOverPanel.java`
+### Events Package (`com.comp2042.game.events`)
+48. **`com.comp2042.game.events.InputEventListener`** (interface)
+    - Event listener interface for input events
+    
+49. **`com.comp2042.game.events.MoveEvent`**
+    - Event object for move actions
+    
+50. **`com.comp2042.game.events.EventType`** (enum)
+    - Enumeration of event types (LEFT, RIGHT, UP, DOWN, HARD_DROP)
+    
+51. **`com.comp2042.game.events.EventSource`** (enum)
+    - Enumeration of event sources (KEYBOARD, TIMER)
 
-**Changes**:
-- Added "New Game (N)" button to game over panel
-- Button allows immediate restart without closing panel
-- Styled with custom CSS (`game-button` class)
-- Verifies high score persistence across sessions
+### Operations Package (`com.comp2042.game.operations`)
+52. **`com.comp2042.game.operations.MatrixOperations`**
+    - Utility class for matrix operations
+    - Collision detection, merging, row clearing, copying
+    
+53. **`com.comp2042.game.operations.BrickRotator`**
+    - Handles brick rotation logic
+    - Calculates next shape after rotation
 
-**Design**: Provides user-friendly way to test high score saving functionality
+### Score Package (`com.comp2042.game.score`)
+54. **`com.comp2042.game.score.Score`**
+    - Score management with JavaFX property
+    - Observable score for UI binding
+    
+55. **`com.comp2042.game.score.HighScoreManager`**
+    - High score tracking and persistence
+    - Automatic detection of new high scores
+    - File I/O for saving/loading high scores
 
-#### Pause Panel Enhancement
-**File**: `PausePanel.java` (NEW)
+### Level Package (`com.comp2042.game.level`)
+56. **`com.comp2042.game.level.Level`**
+    - Immutable level configuration object
+    - Contains level number, drop speed, score multiplier
+    
+57. **`com.comp2042.game.level.LinesClearedTracker`**
+    - Tracks total lines cleared
+    - Observable property for reactive updates
+    
+58. **`com.comp2042.game.level.LevelStrategy`** (interface)
+    - Strategy interface for level configuration
+    
+59. **`com.comp2042.game.level.DefaultLevelStrategy`**
+    - Default implementation providing predefined levels
+    - Defines 10 levels with increasing difficulty
+    
+60. **`com.comp2042.game.level.LevelManager`**
+    - Manages level progression
+    - Updates level every 5 lines cleared
+    - Provides current level configuration
 
-**Purpose**: Dedicated pause panel with interactive controls
+### Test Classes
+61-91. **JUnit Test Suite** (`src/test/java/com/comp2042/`)
+    - `MatrixOperationsTest`, `BrickRotatorTest`
+    - `ScoreTest`, `HighScoreManagerTest` (if added)
+    - All 7 brick tests (IBrickTest, JBrickTest, etc.)
+    - `RandomBrickGeneratorTest`, `BrickGeneratorFactoryTest`
+    - `SimpleBoardTest`, `GhostBlockTest`
+    - `GameControllerTest`
+    - All 5 command tests (LeftMoveCommandTest, RightMoveCommandTest, etc.)
+    - All 4 data tests (ViewDataTest, DownDataTest, ClearRowTest, NextShapeInfoTest)
+    - All 3 event tests (MoveEventTest, EventTypeTest, EventSourceTest)
+    - All 4 level tests (LevelTest, LevelManagerTest, DefaultLevelStrategyTest, LinesClearedTrackerTest)
 
-**Features**:
-- Displays "PAUSED" message
-- "Resume (P)" button - resumes game
-- "New Game (N)" button - starts new game from pause
-- Styled buttons with hover/pressed effects
-
-**Integration**:
-- Replaces simple text notification with interactive panel
-- Button actions bound in `GuiController.showPauseNotification()`
-- Allows starting new game without resuming current game
-
-**CSS Styling** (`window_style.css`):
-```css
-.game-button {
-    -fx-font-family: "Let's go Digital";
-    -fx-font-size: 18px;
-    -fx-background-color: linear-gradient(...);
-    -fx-text-fill: white;
-    -fx-padding: 10px 20px;
-    -fx-background-radius: 5px;
-    -fx-cursor: hand;
-}
-```
-
-**Benefits**:
-- **Better UX**: Clear, clickable buttons instead of text-only instructions
-- **Testing Support**: Easy to verify high score persistence by starting new games
-- **Visual Feedback**: Hover and pressed states provide interactivity
-- **Consistency**: Both game over and pause panels have similar button styles
-
-### 10.5 User Experience
-
-#### First Time Playing
-1. Game starts with High Score: 0
-2. Player plays and achieves any score
-3. On game over, score becomes new high score
-4. High score saved automatically to disk
-
-#### Subsequent Games
-1. Game loads previous high score from disk
-2. High score displays throughout gameplay
-3. If player beats high score:
-   - High score updates in real-time during play
-   - "NEW HIGH SCORE!" notification shows on game over
-   - New high score saved to disk
-4. If player doesn't beat high score:
-   - High score remains unchanged
-   - No special notification
-   - File not modified
-
-### 10.6 Design Benefits
-- **Observer Pattern**: Automatic high score detection via property listeners
-- **Single Responsibility**: `HighScoreManager` only handles high score logic
-- **Persistence**: Score survives application restarts
-- **User Feedback**: Clear visual indication of high score achievement
-- **Error Resilience**: Gracefully handles missing files or I/O errors
-- **Platform Independent**: Works on Windows, macOS, Linux
-- **Encapsulation**: File I/O details hidden from other components
-- **Reactive Updates**: UI automatically updates via property binding
-
-### 10.7 Technical Details
-
-**File System Operations**:
-- Directory creation: `Files.createDirectories()` if `.tetris` doesn't exist
-- File writing: `DataOutputStream` for binary format
-- File reading: `DataInputStream` with existence check
-- Error handling: Try-catch with fallback to default value (0)
-
-**Concurrency Considerations**:
-- JavaFX properties are thread-safe for UI binding
-- File I/O occurs on JavaFX Application Thread
-- No explicit synchronization needed for single-player game
-
-**Memory Footprint**:
-- `HighScoreManager`: ~24 bytes (IntegerProperty + boolean)
-- File on disk: 4 bytes
-- Minimal memory impact
-
----
-
-## 11. Object-Oriented Concepts Demonstrated
-
-### 10.1 Encapsulation
-- Private fields with controlled access via getters
-- Immutable DTOs (ViewData, Level)
-- Internal state hidden from clients
-
-### 10.2 Inheritance
-- Brick classes extend/implement `Brick` interface
-- Color strategies implement `ColorStrategy` interface
-- Commands implement `MoveCommand` interface
-
-### 10.3 Polymorphism
-- Strategy pattern: Different strategies used polymorphically
-- Command pattern: Commands executed polymorphically
-- Interface segregation: Different board implementations
-
-### 10.4 Abstraction
-- Interfaces hide implementation details
-- Abstract concepts (Board, Brick, Strategy) separate from concrete implementations
-
-### 10.5 Composition
-- `SimpleBoard` composes `BrickGenerator`, `BrickRotator`, `Score`, `LevelManager`
-- `LevelManager` composes `LinesClearedTracker` and `LevelStrategy`
-- Components work together without tight coupling
+**Total New Classes**: Over 90 Java files including source files and test files
 
 ---
 
-## 12. SOLID Principles Applied
+## Modified Java Classes
 
-### 12.1 Single Responsibility Principle (SRP)
-- Each class has one reason to change
-- Examples: `InputHandler` (input only), `GameTimer` (timing only), `GameViewModel` (rendering only)
+### Core Modifications
 
-### 12.2 Open/Closed Principle (OCP)
-- Open for extension, closed for modification
-- Examples: New colors via `ColorStrategy`, new commands via `MoveCommand`, new level strategies via `LevelStrategy`
+1. **`com.comp2042.ui.GuiController`**
+   - **Changes**: 
+     - Decomposed from 200+ lines to focused responsibilities
+     - Extracted `InputHandler`, `GameTimer`, `GameViewModel`, `ColorMapper`
+     - Added ghost piece rendering logic (`positionGhostPanel()`, `updateGhostRectangles()`)
+     - Added high score binding (`bindHighScore()`)
+     - Added level binding and level-up notifications
+     - Added pause/resume functionality (`togglePause()`, `showPauseNotification()`)
+     - Enhanced game over logic with high score notification
+     - Improved UI refresh callback mechanism for instant updates
+   - **Reason**: Enforce Single Responsibility Principle, improve testability, support new features (ghost piece, level system, high score)
+   
+2. **`com.comp2042.game.board.SimpleBoard`**
+   - **Changes**:
+     - Renamed `createNewBrick()` → `trySpawnNewBrick()` (clarity)
+     - Added `findDropY()` method for ghost piece calculation
+     - Updated `getViewData()` to include ghost position (ghostX, ghostY)
+     - Integrated `LevelManager` and `LinesClearedTracker`
+     - Added `HighScoreManager` integration
+     - Enhanced `newGame()` to reset level and high score trackers
+     - Modified constructor to use `BrickGeneratorFactory`
+   - **Reason**: Support ghost piece feature, level system, high score tracking, dependency injection
+   
+3. **`com.comp2042.game.data.ViewData`**
+   - **Changes**:
+     - Added `ghostX` and `ghostY` fields
+     - Updated constructor to accept ghost position parameters
+     - Added `getGhostX()` and `getGhostY()` accessor methods
+   - **Reason**: Pass ghost piece position from board to UI layer (separation of concerns)
+   
+4. **`com.comp2042.game.controller.GameController`**
+   - **Changes**:
+     - Modified constructor to accept `Board` interface (dependency injection)
+     - Removed direct instantiation of `SimpleBoard`
+     - Added `onHardDropEvent()` method for hard drop handling
+     - Added level binding logic (binds `LevelManager` to `GuiController`)
+     - Added high score binding logic
+     - Enhanced event handling to support new controls (Space for hard drop)
+   - **Reason**: Dependency inversion, support hard drop feature, integrate level system and high score
+   
+5. **`com.comp2042.game.controller.commands.DownMoveCommand`**
+   - **Changes**:
+     - Added level-based score multiplier application
+     - Integrated `LinesClearedTracker` to track cleared lines
+     - Added `LevelManager.updateLevel()` call on line clears
+     - Added level-up notification triggering
+   - **Reason**: Integrate level system, apply progressive score multipliers
+   
+6. **`src/main/resources/gameLayout.fxml`**
+   - **Changes**:
+     - Added `<GridPane fx:id="ghostPanel">` for ghost piece rendering
+     - Added `<Label fx:id="levelLabel">` for level display
+     - Added `<Label fx:id="highScoreLabel">` for high score display
+     - Updated layout positioning for new UI elements
+   - **Reason**: Support ghost piece visualization, level display, high score display
+   
+7. **`src/main/resources/window_style.css`**
+   - **Changes**:
+     - Added `.game-button` style class for interactive buttons
+     - Added hover and pressed state styles (`:hover`, `:pressed`)
+     - Enhanced visual styling for pause and game over panels
+   - **Reason**: Improve UI polish and user experience
+   
+8. **`pom.xml`**
+   - **Changes**:
+     - Updated main class path: `com.comp2042.app.Main` (was flat package)
+     - Added Mockito dependencies for unit testing (version 5.14.2)
+     - Configured maven-surefire-plugin for JUnit Platform
+     - Added ByteBuddy experimental flag for Mockito compatibility
+   - **Reason**: Support package reorganization, enable comprehensive testing with mocking
 
-### 12.3 Liskov Substitution Principle (LSP)
-- Subtypes must be substitutable for their base types
-- Examples: Any `Brick` implementation works, any `LevelStrategy` works, any `ColorStrategy` works
+### Minor Modifications
 
-### 12.4 Interface Segregation Principle (ISP)
-- Clients shouldn't depend on interfaces they don't use
-- Examples: Segregated `Board` interfaces (`MovableBoard`, `ClearableBoard`, etc.)
+9. **`com.comp2042.game.operations.MatrixOperations`**
+   - **Changes**: Minor cleanup, improved method documentation
+   - **Reason**: Code maintainability
+   
+10. **`com.comp2042.game.operations.BrickRotator`**
+    - **Changes**: Enhanced documentation, maintained existing logic
+    - **Reason**: Code clarity
 
-### 12.5 Dependency Inversion Principle (DIP)
-- Depend on abstractions, not concretions
-- Examples: `GameController` depends on `Board` interface, `SimpleBoard` depends on `BrickGenerator` interface, `LevelManager` depends on `LevelStrategy` interface
-
----
-
-## 13. Build & Run Instructions
-
-### Prerequisites
-- Java 23
-- Maven (or use included Maven wrapper)
-
-### Build
-```bash
-./mvnw clean compile
-```
-
-### Run
-```bash
-./mvnw clean javafx:run
-```
-
-### Test
-```bash
-./mvnw test
-```
-
-### Generate Javadoc
-```bash
-./mvnw javadoc:javadoc
-```
-
----
-
-## 14. Git History
-
-### Branch Strategy
-- `master`: Main development branch with all stable features
-- `Additional-Features`: Feature branch for new gameplay features (level system, ghost piece, hard drop)
-- `refactor/*` branches: Short-lived branches for specific refactoring work
-  - `refactor/packaging-and-organisation`
-  - `refactor/basic-maintenance`
-  - `refactor/single-responsibility`
-  - `refactor/remove-unused-code`
-
-### Chronological Development Timeline
-
-#### Phase 1: Initial Setup (September-October 2025)
-- **Sep 29** (`dc55722`): Initial commit - base Tetris game
-
-#### Phase 2: Package Reorganization (October 2025)
-- **Oct 28** (`732b2d7`): Package reorganization into `app/`, `game/`, `ui/` structure
-  - 31 files reorganized
-  - All imports updated
-  - `pom.xml` and FXML references fixed
-
-#### Phase 3: Basic Maintenance (October 2025)
-- **Oct 28** (`6b4f6c0`): Basic maintenance and bug fixes
-  - Fixed score binding
-  - Renamed `createNewBrick()` → `trySpawnNewBrick()`
-  - Added score display to UI
-  - 7 files modified
-
-#### Phase 4: Single Responsibility Refactoring (October-November 2025)
-- **Oct 30** (`dec9e11`): Extracted UI components (SRP)
-  - Created `GameTimer`, `InputHandler`, `GameViewModel`, `ColorMapper`
-  - Reduced `GuiController` from 200+ lines to focused responsibilities
-  - 5 new files, GuiController simplified
-
-- **Nov 2** (`c577acc`): Dependency Injection and Factory Pattern
-  - Implemented `BrickGeneratorFactory`
-  - GameController now accepts Board interface
-  - 13 files modified
-
-#### Phase 5: Testing Infrastructure (November 2025)
-- **Nov 12** (`c0e0ebc`): Initial JUnit 5 test suite
-  - Added tests for bricks, operations, score
-  - Configured Maven Surefire for JUnit Platform
-  - 9 test files created
-
-#### Phase 6: Javadoc Documentation (November 2025)
-- **Nov 17** (`e85c90c`): Comprehensive Javadoc coverage
-  - Documented all design patterns and SOLID principles
-  - Added @param and @return tags to all public methods
-  - Converted inline comments to proper Javadoc format
-  - 30 files documented
-
-#### Phase 7: New Features - Level System (November 2025)
-- **Nov 18** (`180a32f`): Level system implementation
-  - Added 5 new level-related classes
-  - Adaptive difficulty every 5 lines
-  - Speed scaling (400ms → 60ms)
-  - Score multipliers (1.0x → 2.5x)
-
-#### Phase 8: New Features - Input Latency Fix (November 2025)
-- **Nov 19** (`ce55a4d`): Fixed input latency
-  - Modified `InputHandler` with callback mechanism
-  - Immediate UI refresh on key press
-  - Critical bug fix for gameplay feel
-
-#### Phase 9: New Features - Hard Drop & Testing (November 2025)
-- **Nov 20** (`8b628d3`): Hard drop feature
-  - Added `HardDropMoveCommand`
-  - Space bar control, 2 points per cell
-  
-- **Nov 20** (`a0b3ee4`): Ghost piece tests
-  - Added `GhostBlockTest.java` with 13 tests
-
-- **Nov 20** (`12cb666`): Mockito dependencies
-  - Added Mockito for mocking in tests
-
-- **Nov 20** (`6593775`): Comprehensive test suite
-  - Added tests for all game components
-  - Total: 31 test files, 189+ test methods
-
-#### Phase 10: New Features - Pause Functionality (November 2024)
-- **Nov 24** (`5b0b55b`): Reflection effect on game over panel
-- **Nov 24** (`e55a350`): Pause/resume with P key
-- **Nov 24** (`6804065`): Merged Additional-Features into refactor/basic-maintenance
-
-#### Phase 11: Final Refinements (November 2025)
-- **Nov 25** (`8ccda11`): Remove unused code and clean imports
-- **Nov 25** (`7b045cb`): Merged refactor/remove-unused-code cleanup
-- **Nov 25** (`1acd126`): Fixed brick spawn position and pause notification UI
-- **Nov 25** (`4141056`): Extract constants, reduce duplication, improve naming
-- **Nov 25** (`0419cd8`): Comprehensive tests for data package and HardDropMoveCommand
-
-### Key Statistics
-- **Total Commits**: 18 commits
-- **Duration**: September 29 - November 25, 2025 (~2 months)
-- **Files Created**: 60+ Java files (31 test files + 30+ source files)
-- **Lines of Code**: Significant codebase growth with proper organization
-- **Test Coverage**: 189+ test methods across 31 test files
+**Summary**: 10 files significantly modified, with changes driven by refactoring goals (SRP, DIP, ISP) and new feature requirements (ghost piece, level system, hard drop, high score).
 
 ---
 
-## 15. Technical Implementation Details
+## Unexpected Problems
 
-### 15.1 Performance Optimizations
-- **O(1) Color Strategy Lookup**: `ColorStrategyRegistry` uses HashMap for constant-time color retrieval
-- **Ghost Piece Calculation**: Efficient simulation using existing collision detection (`MatrixOperations.intersect`)
-- **Property Binding**: JavaFX properties enable reactive UI updates without manual refresh loops
-- **Command Pattern Caching**: `DownMoveCommand` caches result in `DownData` for efficient retrieval
+### 1. Input Latency Issue
+**Problem**: After implementing the `InputHandler` extraction (SRP refactoring), there was a noticeable delay between pressing a key and seeing the piece move on screen. This made the game feel unresponsive and negatively impacted gameplay.
 
-### 15.2 Code Quality Metrics
-- **Reduced Coupling**: GameController no longer creates its own dependencies
-- **Increased Cohesion**: Each class has single, well-defined responsibility
-- **Eliminated Code Smells**:
-  - Removed large switch statements (replaced with Strategy pattern)
-  - Removed nested conditionals (replaced with Command pattern)
-  - Removed duplicate code through extraction
-  - Removed unused imports and dead code
-- **Improved Naming**: Clear, intention-revealing names (`trySpawnNewBrick` vs `createNewBrick`)
+**Root Cause**: The `InputHandler` was calling event listeners (which updated game state) but was not immediately refreshing the UI. The `ViewData` returned from movement events was being ignored, and UI updates only occurred on the next timer tick.
 
-### 15.3 Design Pattern Interactions
-The patterns work together synergistically:
+**Investigation Steps**:
+1. Added logging to track key press → event → UI update timing
+2. Discovered `refreshBrick()` was not being called immediately after move events
+3. Identified that `InputHandler` had no mechanism to trigger UI updates
 
-1. **Factory + Dependency Injection**:
-   - `BrickGeneratorFactory` creates generators
-   - Generators injected into `SimpleBoard` constructor
-   - Result: Testable, flexible brick generation
+**Solution**:
+- Added `Consumer<ViewData> onBrickMoved` callback parameter to `InputHandler`
+- `InputHandler` now captures `ViewData` from event listeners and immediately calls the callback
+- `GuiController` passes `this::refreshBrick` as the callback
+- Result: UI updates instantly upon key press, latency eliminated
 
-2. **Command + Observer**:
-   - Commands modify game state (score, lines cleared)
-   - JavaFX properties observe changes
-   - UI automatically updates
-   - Result: Reactive, decoupled UI
-
-3. **Strategy + Registry**:
-   - Multiple color strategies implement interface
-   - Registry manages strategy lookup
-   - Polymorphic color selection
-   - Result: Extensible color system
-
-4. **Interface Segregation + Dependency Injection**:
-   - Board split into focused interfaces
-   - Commands depend only on needed interfaces
-   - Easy to mock for testing
-   - Result: Testable, loosely coupled commands
-
-### 15.4 JavaFX Integration
-- **FXML Controllers**: `GuiController` linked via `fx:controller` attribute
-- **Property Binding**: Score and Level use `IntegerProperty` for automatic UI sync
-- **Timeline Animation**: `GameTimer` uses JavaFX `Timeline` for game loop
-- **Reflection Effect**: Game over panel uses JavaFX `Reflection` effect for visual polish
-- **CSS Styling**: `window_style.css` provides custom styling for labels and panels
-
-### 15.5 Testing Strategy
-- **Unit Tests**: Test individual components in isolation (MatrixOperations, Score, Bricks)
-- **Integration Tests**: Test component interactions (GameController, Commands)
-- **Mocking**: Mockito used to mock dependencies (Board, GuiController)
-- **Test Data**: Predefined brick shapes and board states for consistent testing
-- **Edge Cases**: Test boundary conditions (empty board, full board, collisions)
+**Lesson Learned**: When refactoring and extracting classes, it's important to make sure the data flow and timing still work correctly. UI responsiveness is especially critical in games where even small delays are very noticeable.
 
 ---
 
-## 16. Future Enhancements
+### 2. Maven Test Execution Failures with Mockito
+**Problem**: After adding Mockito for unit testing, tests failed to run with cryptic errors: `java.lang.IllegalArgumentException: Could not create type` and `NoClassDefFoundError: net/bytebuddy/matcher/ElementMatcher`.
 
-### Potential Features
-- **Next Piece Preview**: Display upcoming piece (data already available in ViewData)
-- **Hold Piece**: Allow players to hold/swap current piece
-- **Combo System**: Bonus points for consecutive line clears
-- **Sound Effects**: Audio feedback for actions
-- **Leaderboard**: Track top 10 scores with names
+**Root Cause**: Mockito uses ByteBuddy for bytecode manipulation, which requires experimental features in Java 23. The default Maven Surefire configuration did not enable these features.
 
-### Code Improvements
-- Additional unit tests for new features
-- Integration tests for game flow
-- Performance optimizations
-- Additional design pattern applications
+**Investigation Steps**:
+1. Ran tests with `-X` flag to see detailed Maven output
+2. Identified ByteBuddy version mismatch warnings
+3. Researched Mockito + Java 23 compatibility issues
+4. Found that ByteBuddy experimental flag was required
 
----
+**Solution**:
+- Added `<argLine>-Dnet.bytebuddy.experimental=true</argLine>` to maven-surefire-plugin configuration in `pom.xml`
+- Updated Mockito to version 5.14.2 (latest stable)
+- Added `mockito-junit-jupiter` dependency for JUnit 5 integration
 
-## 17. Lessons Learned & Best Practices
+**Workarounds Attempted**:
+- Downgrading Java version (rejected - Java 23 required for project)
+- Using alternative mocking frameworks (rejected - Mockito is industry standard)
+- Running tests without mocking (rejected - reduces test quality)
 
-### 17.1 Design Pattern Application
-- **When to use Strategy**: Replace switch statements or if-else chains with polymorphic strategies
-- **When to use Command**: Encapsulate operations as objects for undo/redo, queuing, or logging
-- **When to use Factory**: Decouple object creation from usage, especially when creation logic is complex
-- **When to use Observer**: Enable reactive updates without tight coupling between components
-- **When to use Registry**: Centralize strategy/object lookup for easier management
-
-### 17.2 SOLID Principles in Practice
-- **SRP**: Ask "does this class have more than one reason to change?" If yes, split it
-- **OCP**: Design for extension (new strategies, commands) without modification (existing code)
-- **LSP**: Ensure subtypes can replace base types without breaking behavior
-- **ISP**: Don't force clients to depend on methods they don't use - create focused interfaces
-- **DIP**: Depend on abstractions (interfaces) not concretions (classes)
-
-### 17.3 Refactoring Approach
-1. **Start with organization**: Clean package structure makes everything else easier
-2. **Fix bugs early**: Address known issues before major refactoring
-3. **Extract incrementally**: Don't try to refactor everything at once
-4. **Test after each change**: Ensure functionality preserved after each refactoring step
-5. **Document as you go**: Javadoc and README updated alongside code changes
-
-### 17.4 Testing Insights
-- **Test early**: Setting up test infrastructure early makes TDD easier
-- **Mock dependencies**: Mockito essential for isolating units under test
-- **Test behavior, not implementation**: Focus on what code does, not how it does it
-- **Edge cases matter**: Boundary conditions often reveal bugs
-
-### 17.5 JavaFX Best Practices
-- **Separate concerns**: UI logic in controller, business logic in model
-- **Use property binding**: Automatic synchronization better than manual updates
-- **FXML for layouts**: Declarative UI description cleaner than programmatic creation
-- **Event handlers extracted**: `InputHandler` separation improves testability
+**Lesson Learned**: Using the latest Java version can sometimes cause compatibility issues with testing libraries. It's worth checking if there are known issues before diving too deep into debugging.
 
 ---
 
-## 18. Summary
+### 3. Unresolved Merge Conflict Markers in Code
+**Problem**: After trying to merge branches, I found `<<<<<<< Updated upstream`, `=======`, and `>>>>>>> Stashed changes` markers showing up in my `GuiController.java` file. The code wouldn't compile.
 
-This project demonstrates:
-- ✅ Meaningful package organization
-- ✅ Basic maintenance (renaming, encapsulation, cleanup)
-- ✅ Single Responsibility Principle through class decomposition
-- ✅ Multiple design patterns (Strategy, Factory, Command, Observer)
-- ✅ Comprehensive JUnit test suite
-- ✅ Bug fixes improving gameplay experience
-- ✅ New gameplay features:
-  - **Hard Drop**: Instant piece drop with Space key (Command Pattern)
-  - **Pause/Resume**: Game pause functionality with P key
-  - **Level System**: Adaptive difficulty with Strategy pattern (every 5 lines = new level)
-  - **Ghost Piece**: Semi-transparent landing preview with real-time updates
-  - **High Score Tracking**: Persistent high score with automatic save/load (Observer Pattern)
-- ✅ SOLID principles throughout
-- ✅ Object-oriented concepts (Encapsulation, Inheritance, Polymorphism, Abstraction, Composition)
+**Root Cause**: I had accidentally committed the file with unresolved merge conflicts after a `git stash pop` operation went wrong.
 
-All changes maintain backward compatibility while significantly improving code quality, maintainability, and gameplay experience.
+**Solution**:
+- Manually went through and removed all the conflict markers
+- Chose the correct code version for each conflicted section
+- Tested to make sure everything still worked
+- Committed the properly merged version
 
+**Lesson Learned**: Always check for conflict markers before committing. Running a quick search for `<<<<<<<` in your files can save a lot of headache.
+
+---
+
+### 4. Git Branch Name Typo
+**Problem**: I was trying to push to `Additional-Features` but realized I had been working on `Addtional-Features` (missing an "i"). Git kept saying the branch didn't exist remotely.
+
+**Root Cause**: Created the branch with a typo using `git checkout -b Addtional-Features` and didn't notice until much later.
+
+**Solution**:
+- Switched to the correct branch name
+- Used `git cherry-pick` to move my commit to the right branch
+- Deleted the typo branch
+
+**Lesson Learned**: Double-check branch names when creating them. It's annoying to fix later.
+
+---
+
+### 5. Bricks Spawning in Wrong Position
+**Problem**: New bricks were appearing in the middle of the board vertically instead of at the top where they should spawn.
+
+**Root Cause**: The spawn position was set to `new Point(4, 10)` - the Y coordinate was way too high. The board height is 25, so Y=10 is nearly halfway down.
+
+**Solution**:
+- Changed spawn position to `new Point(4, 0)` to spawn at the top of the board
+- Tested with different brick types to make sure they all spawn correctly
+
+**Lesson Learned**: Always verify coordinate systems and initial positions, especially when working with grid-based games.
+
+---
+
+### 6. Pause Functionality Not Working
+**Problem**: After implementing the pause feature, pressing the P key did absolutely nothing. No errors, just no response.
+
+**Root Cause**: Two-part problem:
+1. First, `InputHandler` was missing the P key handler completely
+2. Even after adding it, `GuiController` wasn't passing the pause callback
+
+**Solution**:
+- Added `onPauseRequested` parameter to `InputHandler`
+- Added P key binding in the input handler
+- Updated `GuiController` to pass `this::togglePause` as the callback when creating `InputHandler`
+
+**Lesson Learned**: When adding new input handling, you need to wire it through the entire chain - from the handler to the callback to the actual action.
+
+---
+
+### 7. High Score Not Updating Properly
+**Problem**: The high score label wasn't showing any updates even though I could see the current score was higher than the saved high score.
+
+**Root Cause**: I was calling `highScoreManager.setCurrentScore()` at the wrong point in the game flow.
+
+**Solution**:
+- Moved the call to `gameOver()` method
+- Made sure it's called before checking whether a new high score was achieved
+- This way the manager can properly compare and update
+
+**Lesson Learned**: Timing matters a lot when dealing with state updates. Make sure you're setting values before checking them.
+
+---
+
+### 8. Game Over Panel Not Appearing
+**Problem**: When bricks reached the top of the board, the game would stop but the game over panel stayed invisible.
+
+**Root Cause**: I was using `groupNotification.getChildren().clear()` which was removing the entire container, including the game over panel.
+
+**Solution**:
+- Changed to only clear the pause panel specifically
+- Used `groupNotification.getChildren().remove(pausePanel)` instead
+- Made sure game over panel is added after clearing
+
+**Lesson Learned**: Be specific about what you're removing from UI containers. Clearing everything can have unintended consequences.
+
+---
+
+### 9. Pause Panel Stuck on Screen
+**Problem**: After pausing the game and then starting a new game, the pause panel would remain visible on screen even though the game was running.
+
+**Root Cause**: The `newGame()` method wasn't cleaning up the pause panel UI element.
+
+**Solution**:
+- Added pause panel cleanup to the `newGame()` method
+- Made sure all UI state resets when starting a new game
+- Set `isPause` back to false
+
+**Lesson Learned**: When implementing a reset/new game function, make sure to clean up all UI elements and state flags.
+
+---
+
+### 10. Git Reset Caused Old Bugs to Reappear
+**Problem**: After doing a `git reset --hard HEAD`, bugs that I thought I had fixed started appearing again.
+
+**Root Cause**: The commit I reset to (0fc8e52) actually already had those bugs in it. I had fixed them in later commits that I just threw away.
+
+**Solution**:
+- Used `git reflog` to find the commit history
+- Reset to an earlier good commit (f588fe9) that had the fixes
+- More carefully chose which commit to reset to
+
+**Lesson Learned**: Before doing a hard reset, check the commit history to make sure you're resetting to a state that actually works. `git reflog` is your friend.
+
+---
+
+### Summary of Problem Resolution
+
+All of these problems were eventually resolved without compromising the code quality or functionality. The main takeaways from dealing with these issues were:
+
+- Always check for merge conflict markers before committing - they can break your entire build
+- Input responsiveness is really important in games - even small delays are noticeable
+- Double-check coordinate systems and initial positions in grid-based games
+- When adding new features, make sure to wire through the entire callback chain
+- UI state management requires careful attention to what gets cleared and when
+- Git operations like reset and cherry-pick need to be done carefully - use `git reflog` when in doubt
+- Testing early and understanding framework constraints saves a lot of debugging time later
+- Using the latest Java version can cause some compatibility issues with testing frameworks
+
+---
+
+## Project Statistics
+
+### Code Metrics
+- **Total Java Files**: Over 90 files including source and test files
+- **Test Methods**: Comprehensive test suite with over 180 test methods
+- **Design Patterns Used**: 5 major patterns (Strategy, Factory, Command, Observer, Registry)
+- **SOLID Principles Applied**: All 5 principles throughout codebase
+
+### Development Timeline
+- **Duration**: Development from late September through early December 2025
+- **Expected Completion**: December 8, 2025
+- **Total Commits**: Multiple commits across several feature branches
+- **Test Coverage**: All major components covered
+
+### Features Summary
+- Package reorganization (31 files reorganized)
+- Single Responsibility refactoring (7 extracted classes)
+- Design patterns (5 patterns implemented)
+- Interface segregation (Board split into 4 interfaces)
+- Dependency injection (3 major components)
+- Bug fixes (3 critical issues resolved)
+- Hard drop (Space key, 2 pts/cell bonus)
+- Pause/resume (P key, interactive panel)
+- Level system (10 levels, adaptive difficulty)
+- Ghost piece (semi-transparent preview, real-time updates)
+- High score tracking (persistent storage)
+- Comprehensive tests covering all components
+
+---
+
+## Conclusion
+
+This project demonstrates application of SOLID principles and design patterns to transform a legacy codebase. The refactoring work has focused on improving code organization, maintainability, and extensibility while adding meaningful gameplay enhancements like the level system, ghost piece preview, hard drop functionality, and high score tracking.
+
+All implemented features so far are fully functional and tested. The codebase is well-organized and structured for maintainability. Several unexpected technical challenges have been encountered and resolved during development, particularly around UI responsiveness, test framework compatibility, and JavaFX threading requirements.
