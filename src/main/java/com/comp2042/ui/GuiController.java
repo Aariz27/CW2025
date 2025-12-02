@@ -16,7 +16,6 @@ import javafx.scene.text.Font;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-//missing imports (now added):
 import com.comp2042.game.events.InputEventListener;
 import com.comp2042.game.events.MoveEvent;
 import com.comp2042.game.events.EventType;
@@ -24,12 +23,7 @@ import com.comp2042.game.events.EventSource;
 import com.comp2042.game.data.ViewData;
 import com.comp2042.game.data.DownData;
 import com.comp2042.game.level.LevelManager;
-<<<<<<< Updated upstream
-
-//imports for the bindScore method:
-=======
 import com.comp2042.game.score.HighScoreManager;
->>>>>>> Stashed changes
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.Label;
 
