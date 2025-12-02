@@ -8,7 +8,7 @@ import javafx.beans.property.SimpleIntegerProperty;
  * Uses JavaFX properties for reactive updates, following Observer pattern.
  */
 public final class LinesClearedTracker {
-
+    
     private final IntegerProperty totalLines = new SimpleIntegerProperty(0);
 
     /**

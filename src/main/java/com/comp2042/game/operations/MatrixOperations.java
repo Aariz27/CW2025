@@ -7,14 +7,33 @@ import java.util.Deque;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Utility class providing static methods for matrix operations used in the game.
+ * Handles collision detection, matrix copying, merging bricks with the board,
+ * and row clearing logic.
+ * 
+ * <p>This class follows the Utility Class pattern - all methods are static
+ * and the constructor is private to prevent instantiation.
+ */
 public class MatrixOperations {
 
 
-    //We don't want to instantiate this utility class
+    /**
+     * Private constructor to prevent instantiation of this utility class.
+     */
     private MatrixOperations(){
 
     }
 
+    /**
+     * Checks if a brick would collide with the board boundaries or existing blocks.
+     * 
+     * @param matrix the game board matrix
+     * @param brick the brick shape matrix to check
+     * @param x the x-coordinate where the brick would be placed
+     * @param y the y-coordinate where the brick would be placed
+     * @return true if the brick would collide, false if placement is valid
+     */
     public static boolean intersect(final int[][] matrix, final int[][] brick, int x, int y) {
         for (int i = 0; i < brick.length; i++) {
             for (int j = 0; j < brick[i].length; j++) {
@@ -28,10 +47,25 @@ public class MatrixOperations {
         return false;
     }
 
+    /**
+     * Checks if coordinates are outside the board boundaries.
+     * 
+     * @param matrix the game board matrix
+     * @param targetX x-coordinate to check
+     * @param targetY y-coordinate to check
+     * @return true if coordinates are out of bounds, false otherwise
+     */
     private static boolean checkOutOfBound(int[][] matrix, int targetX, int targetY) {
         return targetX < 0 || targetY < 0 || targetY >= matrix.length || targetX >= matrix[targetY].length;
     }
 
+    /**
+     * Creates a deep copy of a 2D integer array.
+     * Used to maintain immutability when passing matrix data.
+     * 
+     * @param original the 2D array to copy
+     * @return a new 2D array with copied values
+     */
     public static int[][] copy(int[][] original) {
         int[][] myInt = new int[original.length][];
         for (int i = 0; i < original.length; i++) {
@@ -43,6 +77,16 @@ public class MatrixOperations {
         return myInt;
     }
 
+    /**
+     * Merges a brick into the board matrix at the specified position.
+     * Creates a new matrix with the brick's blocks added to the board.
+     * 
+     * @param filledFields the current game board matrix
+     * @param brick the brick shape matrix to merge
+     * @param x x-coordinate where the brick is positioned
+     * @param y y-coordinate where the brick is positioned
+     * @return a new matrix with the brick merged into the board
+     */
     public static int[][] merge(int[][] filledFields, int[][] brick, int x, int y) {
         int[][] copy = copy(filledFields);
         for (int i = 0; i < brick.length; i++) {
@@ -57,6 +101,15 @@ public class MatrixOperations {
         return copy;
     }
 
+    /**
+     * Checks for and removes complete rows from the board.
+     * Complete rows are removed and remaining rows are shifted down.
+     * Calculates score bonus as 50 * (lines cleared)².
+     * 
+     * @param matrix the game board matrix to check
+     * @return ClearRow object containing the number of cleared rows,
+     *         the updated matrix, and the score bonus
+     */
     public static ClearRow checkRemoving(final int[][] matrix) {
         int[][] tmp = new int[matrix.length][matrix[0].length];
         Deque<int[]> newRows = new ArrayDeque<>();
@@ -89,6 +142,13 @@ public class MatrixOperations {
         return new ClearRow(clearedRows.size(), tmp, scoreBonus);
     }
 
+    /**
+     * Creates a deep copy of a list of 2D integer arrays.
+     * Used for copying brick rotation lists.
+     * 
+     * @param list the list of 2D arrays to copy
+     * @return a new list with deep-copied 2D arrays
+     */
     public static List<int[][]> deepCopyList(List<int[][]> list){
         return list.stream().map(MatrixOperations::copy).collect(Collectors.toList());
     }

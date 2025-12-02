@@ -26,4 +26,5 @@
     </stylesheets>
     <Label fx:id="scoreLabel" text="Score: 0" layoutX="200" layoutY="10" styleClass="score-label"/>
     <Label fx:id="levelLabel" text="Level: 1" layoutX="200" layoutY="35" styleClass="score-label"/>
+    <Label fx:id="highScoreLabel" text="High Score: 0" layoutX="200" layoutY="60" styleClass="score-label"/>
 </Pane>
