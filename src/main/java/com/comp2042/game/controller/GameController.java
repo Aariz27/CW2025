@@ -38,10 +38,11 @@ public class GameController implements InputEventListener {
         viewGuiController.initGameView(board.getBoardMatrix(), board.getViewData());
         viewGuiController.bindScore(board.getScore().scoreProperty());
         
-        // Bind level if board is SimpleBoard
+        // Bind level and high score if board is SimpleBoard
         if (board instanceof SimpleBoard simpleBoard) {
             LevelManager levelManager = simpleBoard.getLevelManager();
             viewGuiController.bindLevel(levelManager);
+            viewGuiController.bindHighScore(simpleBoard.getHighScoreManager());
         }
     }
     

@@ -9,6 +9,7 @@ import com.comp2042.game.data.ViewData;
 import com.comp2042.game.data.ClearRow;
 import com.comp2042.game.data.NextShapeInfo;
 import com.comp2042.game.score.Score;
+import com.comp2042.game.score.HighScoreManager;
 import com.comp2042.game.level.LinesClearedTracker;
 import com.comp2042.game.level.LevelManager;
 import com.comp2042.game.level.LevelStrategy;
@@ -32,6 +33,7 @@ public class SimpleBoard implements Board {
     private final Score score;
     private final LinesClearedTracker linesTracker;
     private final LevelManager levelManager;
+    private final HighScoreManager highScoreManager;
 
     /**
      * Creates a new SimpleBoard with the specified dimensions.
@@ -51,6 +53,7 @@ public class SimpleBoard implements Board {
         linesTracker = new LinesClearedTracker();
         LevelStrategy levelStrategy = new DefaultLevelStrategy();
         levelManager = new LevelManager(linesTracker, levelStrategy);
+        highScoreManager = new HighScoreManager(score);
     }
 
     @Override
@@ -192,6 +195,15 @@ public class SimpleBoard implements Board {
     public LevelManager getLevelManager() {
         return levelManager;
     }
+    
+    /**
+     * Gets the high score manager.
+     * 
+     * @return the HighScoreManager
+     */
+    public HighScoreManager getHighScoreManager() {
+        return highScoreManager;
+    }
 
 
     @Override
@@ -200,6 +212,7 @@ public class SimpleBoard implements Board {
         score.reset();
         linesTracker.reset();
         levelManager.reset();
+        highScoreManager.resetNewHighScoreFlag();
         trySpawnNewBrick();
     }
 }

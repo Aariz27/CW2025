@@ -24,8 +24,12 @@ import com.comp2042.game.events.EventSource;
 import com.comp2042.game.data.ViewData;
 import com.comp2042.game.data.DownData;
 import com.comp2042.game.level.LevelManager;
+<<<<<<< Updated upstream
 
 //imports for the bindScore method:
+=======
+import com.comp2042.game.score.HighScoreManager;
+>>>>>>> Stashed changes
 import javafx.beans.binding.Bindings;
 import javafx.scene.control.Label;
 
@@ -53,10 +57,16 @@ public class GuiController implements Initializable {
     
     @FXML
     private Label levelLabel;
+    
+    @FXML
+    private Label highScoreLabel;
 
     private Rectangle[][] displayMatrix;
     
     private LevelManager levelManager;
+    private HighScoreManager highScoreManager;
+    
+    private PausePanel pausePanel;
 
     private InputEventListener eventListener;
 
@@ -86,6 +96,9 @@ public class GuiController implements Initializable {
         //removed the input handler from here.
 
         gameOverPanel.setVisible(false);
+        
+        // Bind new game button in game over panel
+        gameOverPanel.getNewGameButton().setOnAction(e -> newGame(e));
 
         final Reflection reflection = new Reflection();
         reflection.setFraction(0.8);
@@ -283,6 +296,23 @@ public class GuiController implements Initializable {
     }
     
     /**
+     * Binds the high score property to the high score label.
+     * 
+     * @param highScoreManager the high score manager containing the high score property
+     */
+    public void bindHighScore(HighScoreManager highScoreManager) {
+        this.highScoreManager = highScoreManager;
+        if (highScoreLabel != null && highScoreManager != null) {
+            highScoreLabel.textProperty().bind(
+                Bindings.createStringBinding(
+                    () -> "High Score: " + highScoreManager.highScoreProperty().getValue(),
+                    highScoreManager.highScoreProperty()
+                )
+            );
+        }
+    }
+    
+    /**
      * Called when the player levels up.
      * Shows a notification and updates the timer speed.
      * 
@@ -300,13 +330,35 @@ public class GuiController implements Initializable {
 
     public void gameOver() {
         gameTimer.stop();
+        
+        // Clear pause panel if it exists (but not the game over panel container)
+        if (pausePanel != null) {
+            groupNotification.getChildren().remove(pausePanel);
+            pausePanel = null;
+        }
+        
+        // Check for new high score
+        if (highScoreManager != null && highScoreManager.isNewHighScore()) {
+            NotificationPanel notificationPanel = new NotificationPanel("NEW HIGH SCORE!");
+            groupNotification.getChildren().add(notificationPanel);
+            notificationPanel.showScore(groupNotification.getChildren());
+            highScoreManager.onGameEnd(); // Save high score
+        }
+        
         gameOverPanel.setVisible(true);
         isGameOver.setValue(Boolean.TRUE);
+        isPause.setValue(Boolean.FALSE); // Ensure not in pause state
     }
 
     public void newGame(ActionEvent actionEvent) {
         gameTimer.stop();
         gameOverPanel.setVisible(false);
+        
+        // Clear pause panel if it exists
+        if (pausePanel != null) {
+            hidePauseNotification();
+        }
+        
         eventListener.createNewGame();
         gamePanel.requestFocus();
         startTimerWithCurrentLevelSpeed();
@@ -317,4 +369,81 @@ public class GuiController implements Initializable {
     public void pauseGame(ActionEvent actionEvent) {
         gamePanel.requestFocus();
     }
+<<<<<<< Updated upstream
+=======
+    
+    /**
+     * Toggles the pause state of the game.
+     * Pauses or resumes the game timer and shows/hides the pause notification.
+     */
+    public void togglePause() {
+        if (isGameOver.getValue() == Boolean.TRUE) {
+            return; // Don't allow pause when game is over
+        }
+        
+        boolean currentPauseState = isPause.getValue();
+        isPause.setValue(!currentPauseState);
+        
+        if (isPause.getValue()) {
+            // Pausing the game
+            gameTimer.stop();
+            showPauseNotification();
+        } else {
+            // Resuming the game
+            startTimerWithCurrentLevelSpeed();
+            hidePauseNotification();
+        }
+    }
+    
+    /**
+     * Shows a pause panel with resume and new game options.
+     */
+    private void showPauseNotification() {
+        pausePanel = new PausePanel();
+        // Bind pause panel buttons
+        pausePanel.getResumeButton().setOnAction(e -> {
+            togglePause();
+            gamePanel.requestFocus();
+        });
+        pausePanel.getNewGameButton().setOnAction(e -> newGame(e));
+        
+        groupNotification.getChildren().add(pausePanel);
+    }
+    
+    /**
+     * Hides the pause panel by clearing all notifications.
+     */
+    private void hidePauseNotification() {
+        groupNotification.getChildren().clear();
+        pausePanel = null;
+    }
+    
+    /**
+     * Initializes a grid of rectangles for displaying brick shapes.
+     * Reduces code duplication for creating brick and ghost panels.
+     * 
+     * @param brickData the brick shape data matrix
+     * @param targetPane the GridPane to add rectangles to
+     * @param isGhost whether this is for a ghost piece (semi-transparent with rounded corners)
+     * @return a 2D array of Rectangle objects
+     */
+    private Rectangle[][] initRectangleGrid(int[][] brickData, GridPane targetPane, boolean isGhost) {
+        Rectangle[][] grid = new Rectangle[brickData.length][brickData[0].length];
+        for (int i = 0; i < brickData.length; i++) {
+            for (int j = 0; j < brickData[i].length; j++) {
+                Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
+                if (isGhost) {
+                    rectangle.setFill(ColorMapper.getGhostFillColor(brickData[i][j]));
+                    rectangle.setArcHeight(9);
+                    rectangle.setArcWidth(9);
+                } else {
+                    rectangle.setFill(ColorMapper.getFillColor(brickData[i][j]));
+                }
+                grid[i][j] = rectangle;
+                targetPane.add(rectangle, j, i);
+            }
+        }
+        return grid;
+    }
+>>>>>>> Stashed changes
 }
