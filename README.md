@@ -634,7 +634,11 @@ The following features were considered but not implemented due to time constrain
      - Added pause/resume functionality (`togglePause()`, `showPauseNotification()`)
      - Enhanced game over logic with high score notification
      - Improved UI refresh callback mechanism for instant updates
-   - **Reason**: Enforce Single Responsibility Principle, improve testability, support new features (ghost piece, level system, high score)
+     - Fixed `hidePauseNotification()` to only remove pause panel instead of clearing all children
+     - Increased brick size from 20 to 24 pixels for better visibility
+     - Added game over overlay field for screen dimming effect
+     - Adjusted ghost panel Y offset to accommodate larger bricks
+   - **Reason**: Enforce Single Responsibility Principle, improve testability, support new features, and enhance visual presentation
    
 2. **`com.comp2042.game.board.SimpleBoard`**
    - **Changes**:
@@ -677,15 +681,21 @@ The following features were considered but not implemented due to time constrain
      - Added `<GridPane fx:id="ghostPanel">` for ghost piece rendering
      - Added `<Label fx:id="levelLabel">` for level display
      - Added `<Label fx:id="highScoreLabel">` for high score display
-     - Updated layout positioning for new UI elements
-   - **Reason**: Support ghost piece visualization, level display, high score display
+     - Added `<Rectangle fx:id="gameOverOverlay">` covering full window for dimming effect
+     - Moved `GameOverPanel` from Group to root Pane for proper z-ordering
+     - Scaled all UI positions by 20% to accommodate larger game elements
+     - Adjusted game panel position, notification group, and score label positions
+     - Added Rectangle import for overlay support
+   - **Reason**: Support ghost piece visualization, level display, high score display, and improve game over screen visibility
    
 7. **`src/main/resources/window_style.css`**
    - **Changes**:
      - Added `.game-button` style class for interactive buttons
      - Added hover and pressed state styles (`:hover`, `:pressed`)
      - Enhanced visual styling for pause and game over panels
-   - **Reason**: Improve UI polish and user experience
+     - Updated `.gameOverStyle` with white text color, semi-transparent red background, and better sizing
+     - Added `.game-over-overlay` style with semi-transparent gray dimming effect
+   - **Reason**: Improve UI polish, user experience, and game over screen visibility
    
 8. **`pom.xml`**
    - **Changes**:
@@ -697,15 +707,29 @@ The following features were considered but not implemented due to time constrain
 
 ### Minor Modifications
 
-9. **`com.comp2042.game.operations.MatrixOperations`**
-   - **Changes**: Minor cleanup, improved method documentation
-   - **Reason**: Code maintainability
+9. **`com.comp2042.ui.GameOverPanel`**
+   - **Changes**: 
+     - Added inline styling with semi-transparent dark background
+     - Increased VBox spacing from 10 to 15 pixels
+     - Added rounded corners and padding for better appearance
+   - **Reason**: Improve game over screen visibility and polish
    
-10. **`com.comp2042.game.operations.BrickRotator`**
+10. **`com.comp2042.app.Main`**
+    - **Changes**: 
+      - Increased window dimensions from 300×510 to 432×612
+      - Applied 20% increase to accommodate larger brick size
+      - Additional 20% width increase for better proportions
+    - **Reason**: Better visibility and improved game window proportions
+
+11. **`com.comp2042.game.operations.MatrixOperations`**
+    - **Changes**: Minor cleanup, improved method documentation
+    - **Reason**: Code maintainability
+   
+12. **`com.comp2042.game.operations.BrickRotator`**
     - **Changes**: Enhanced documentation, maintained existing logic
     - **Reason**: Code clarity
 
-**Summary**: 10 files significantly modified, with changes driven by refactoring goals (SRP, DIP, ISP) and new feature requirements (ghost piece, level system, hard drop, high score).
+**Summary**: 12 files significantly modified, with changes driven by refactoring goals (SRP, DIP, ISP), new feature requirements (ghost piece, level system, hard drop, high score), and UI polish improvements.
 
 ---
 
@@ -829,16 +853,20 @@ The following features were considered but not implemented due to time constrain
 ---
 
 ### 8. Game Over Panel Not Appearing
-**Problem**: When bricks reached the top of the board, the game would stop but the game over panel stayed invisible.
+**Problem**: When bricks reached the top of the board, the game would stop but the game over panel stayed invisible against the game background.
 
-**Root Cause**: I was using `groupNotification.getChildren().clear()` which was removing the entire container, including the game over panel.
+**Root Cause**: Multiple issues:
+1. `hidePauseNotification()` was using `groupNotification.getChildren().clear()` which removed everything including the game over panel
+2. The game over panel lacked proper styling and contrast
+3. Panel positioning wasn't explicit enough in the FXML
 
 **Solution**:
-- Changed to only clear the pause panel specifically
-- Used `groupNotification.getChildren().remove(pausePanel)` instead
-- Made sure game over panel is added after clearing
+- Fixed `hidePauseNotification()` to only remove the pause panel specifically instead of clearing all children
+- Added white text color to CSS (`-fx-text-fill: white`) in the `gameOverStyle` with better padding
+- Moved `GameOverPanel` outside the Group directly into the root Pane with explicit positioning (`layoutX="40"`, `layoutY="200"`)
+- Added semi-transparent dark background to the panel so it's clearly visible over the game board
 
-**Lesson Learned**: Be specific about what you're removing from UI containers. Clearing everything can have unintended consequences.
+**Lesson Learned**: Be specific about what you're removing from UI containers. Clearing everything can have unintended consequences. Also, UI elements need proper contrast and positioning to be visible.
 
 ---
 

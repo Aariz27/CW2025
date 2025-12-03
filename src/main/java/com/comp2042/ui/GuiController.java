@@ -50,7 +50,7 @@ import javafx.beans.binding.Bindings;
 public class GuiController implements Initializable {
 
     /** Size of each brick block in pixels */
-    private static final int BRICK_SIZE = 20;
+    private static final int BRICK_SIZE = 24;
     
 
     /** Main game board grid panel */
@@ -72,6 +72,10 @@ public class GuiController implements Initializable {
     /** Panel displayed when game is over */
     @FXML
     private GameOverPanel gameOverPanel;
+    
+    /** Gray overlay shown when game is over */
+    @FXML
+    private Rectangle gameOverOverlay;
 
     /** Label displaying the current score */
     @FXML
@@ -137,6 +141,7 @@ public class GuiController implements Initializable {
         gameTimer = new GameTimer();
 
         gameOverPanel.setVisible(false);
+        gameOverOverlay.setVisible(false);
         
         // Bind new game button in game over panel
         gameOverPanel.getNewGameButton().setOnAction(e -> newGame(e));
@@ -236,7 +241,7 @@ public class GuiController implements Initializable {
      */
     private void positionGhostPanel(ViewData brick) {
         ghostPanel.setLayoutX(gamePanel.getLayoutX() + brick.getGhostX() * ghostPanel.getVgap() + brick.getGhostX() * BRICK_SIZE);
-        ghostPanel.setLayoutY(-42 + gamePanel.getLayoutY() + brick.getGhostY() * ghostPanel.getHgap() + brick.getGhostY() * BRICK_SIZE);
+        ghostPanel.setLayoutY(-50 + gamePanel.getLayoutY() + brick.getGhostY() * ghostPanel.getHgap() + brick.getGhostY() * BRICK_SIZE);
     }
     
     /**
@@ -427,6 +432,8 @@ public class GuiController implements Initializable {
             highScoreManager.onGameEnd(); // Save high score
         }
         
+        // Show gray overlay and game over panel
+        gameOverOverlay.setVisible(true);
         gameOverPanel.setVisible(true);
         isGameOver.setValue(Boolean.TRUE);
         isPause.setValue(Boolean.FALSE); // Ensure not in pause state
@@ -439,6 +446,9 @@ public class GuiController implements Initializable {
      */
     public void newGame(ActionEvent actionEvent) {
         gameTimer.stop();
+        
+        // Hide overlay and game over panel
+        gameOverOverlay.setVisible(false);
         gameOverPanel.setVisible(false);
         
         // Clear pause panel if it exists
@@ -501,11 +511,14 @@ public class GuiController implements Initializable {
     }
     
     /**
-     * Hides the pause panel by clearing all notifications.
+     * Hides the pause panel by removing only the pause panel, not all children.
+     * This preserves the game over panel which is defined in FXML.
      */
     private void hidePauseNotification() {
-        groupNotification.getChildren().clear();
-        pausePanel = null;
+        if (pausePanel != null) {
+            groupNotification.getChildren().remove(pausePanel);
+            pausePanel = null;
+        }
     }
     
     /**

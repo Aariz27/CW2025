@@ -60,8 +60,16 @@
 
 .gameOverStyle {
     -fx-font-family: "Let's go Digital";
-    -fx-font-size: 48;
-    -fx-background-color: red;
+    -fx-font-size: 28;
+    -fx-text-fill: white;
+    -fx-background-color: rgba(200, 0, 0, 0.9);
+    -fx-padding: 10px 20px;
+    -fx-background-radius: 8px;
+}
+
+/* Gray overlay shown when game is over */
+.game-over-overlay {
+    -fx-fill: rgba(0, 0, 0, 0.6);
 }
 
 .scoreClass{
