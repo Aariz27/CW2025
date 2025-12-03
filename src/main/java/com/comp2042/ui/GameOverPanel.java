@@ -21,11 +21,14 @@ public class GameOverPanel extends BorderPane {
         newGameButton = new Button("New Game (N)");
         newGameButton.getStyleClass().add("game-button");
         
-        VBox content = new VBox(10);
+        VBox content = new VBox(15);
         content.setAlignment(Pos.CENTER);
         content.getChildren().addAll(gameOverLabel, newGameButton);
         
         setCenter(content);
+        
+        // Set a semi-transparent dark background for the entire panel
+        setStyle("-fx-background-color: rgba(0, 0, 0, 0.85); -fx-background-radius: 10px; -fx-padding: 20px;");
     }
     
     /**
