@@ -11,7 +11,8 @@ import javafx.scene.shape.Rectangle;
  */
 public final class GameViewModel {
 
-    private static final int BRICK_SIZE = 20;
+    // Keep brick sizing consistent with GuiController (24px)
+    private static final int BRICK_SIZE = 24;
 
     /**
      * Positions the brick panel based on the current brick's position.
