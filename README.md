@@ -898,16 +898,34 @@ The following features were considered but not implemented due to time constrain
 
 ---
 
+### 11. Incomplete Merge Breaking Compilation
+**Problem**: After cloning the repository fresh and running `./mvnw clean compile`, I got a compilation error. `GameController.java` was calling `getHighScoreManager()` on a `SimpleBoard` instance, but that method didn't exist in the `SimpleBoard` class.
+
+**Root Cause**: Incomplete merge during conflict resolution. While merging the High Score feature from `Additional-Features` branch into master, `GameController.java` got updated with the new integration code, but `SimpleBoard.java` stayed in its older state from master. The older version was missing the `HighScoreManager` field and the accessor method that the controller needed.
+
+**Solution**:
+- Used `git checkout Additional-Features -- src/main/java/com/comp2042/game/board/SimpleBoard.java` to get the correct version of `SimpleBoard.java`
+- Verified compilation worked with `./mvnw clean compile`
+- Committed the fix with a clear message explaining what happened
+- Pushed to master branch
+
+**Lesson Learned**: When merging features, make sure all interdependent files get updated together. Testing a fresh compile after merges is crucial to catch these dependency mismatches. The master branch should always be in a compilable, working state.
+
+---
+
 ### Summary of Problem Resolution
 
 All of these problems were eventually resolved without compromising the code quality or functionality. The main takeaways from dealing with these issues were:
 
 - Always check for merge conflict markers before committing - they can break your entire build
+- When merging feature branches, ensure all interdependent files are updated together
+- Test compilation after every merge to catch dependency mismatches early
 - Input responsiveness is really important in games - even small delays are noticeable
 - Double-check coordinate systems and initial positions in grid-based games
 - When adding new features, make sure to wire through the entire callback chain
 - UI state management requires careful attention to what gets cleared and when
 - Git operations like reset and cherry-pick need to be done carefully - use `git reflog` when in doubt
+- The master branch should always remain in a compilable, working state
 - Testing early and understanding framework constraints saves a lot of debugging time later
 - Using the latest Java version can cause some compatibility issues with testing frameworks
 
