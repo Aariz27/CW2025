@@ -33,7 +33,9 @@ cd CW2025
 ```bash
 ./mvnw clean javafx:run
 ```
-   - The game window will launch automatically
+   - The main menu will launch automatically
+   - Choose "Start Game" to begin playing Tetris
+   - Choose "Controls" to view all game controls
    - No additional configuration needed
 
 4. **Run tests** (optional):
@@ -64,12 +66,38 @@ All dependencies are managed via Maven and automatically downloaded:
 
 ## Implemented and Working Properly
 
-### 1. Package Reorganization (Refactoring)
+### 1. Main Menu System
+**Description**: A professional main menu system that appears on application startup, replacing the immediate game launch.
+
+**Features**:
+- **Main Menu Screen**: Displays "TETRIS JavaFX Edition" title with two options
+- **Start Game**: Launches the actual Tetris gameplay with all features enabled
+- **Controls Screen**: Comprehensive reference of all game controls with clear explanations
+- **Scene Management**: Smooth transitions between menu, controls, and game screens
+- **Lazy Loading**: Game components initialize only when "Start Game" is selected
+- **Consistent Styling**: Menu and controls screens match the pause UI aesthetic
+
+**Navigation Flow**:
+- **App Launch** → Main Menu appears
+- **"Controls"** → View control reference → **"Back to Menu"** → Main Menu
+- **"Start Game"** → Full Tetris gameplay begins
+
+**Implementation**:
+- **MainMenuPanel**: Custom panel with title and navigation buttons
+- **ControlsPanel**: Detailed control reference with categorized explanations
+- **Scene Management**: Multiple JavaFX scenes with proper transitions
+- **Performance**: Game loads on-demand for faster startup
+
+**Design**: Provides a polished gaming experience with clear navigation and educational value through the controls reference.
+
+---
+
+### 2. Package Reorganization (Refactoring)
 **Description**: Restructured the entire codebase from a flat package structure into a well-organized, feature-focused hierarchy.
 
 **Structure**:
 - `com.comp2042.app/` - Application entry point (Main.java)
-- `com.comp2042.ui/` - User interface components (8 classes + color package)
+- `com.comp2042.ui/` - User interface components (12 classes + color package)
 - `com.comp2042.game.board/` - Board management (6 classes)
 - `com.comp2042.game.bricks/` - Tetromino pieces (10 classes)
 - `com.comp2042.game.controller/` - Game logic (1 class + 6 command classes)
@@ -87,15 +115,17 @@ All dependencies are managed via Maven and automatically downloaded:
 **Description**: Decomposed `GuiController` (which had 200+ lines with multiple responsibilities) into focused classes.
 
 **Extracted Classes**:
-- **InputHandler**: Keyboard input processing (arrow keys, WASD, Space, P, N)
+- **InputHandler**: Keyboard input processing (arrow keys, WASD, Space, P, N, C, T)
 - **GameTimer**: Game loop timing and automatic piece dropping
 - **GameViewModel**: Data-to-UI transformations and rendering calculations
 - **ColorMapper**: Color code to Paint object mapping
 - **NotificationPanel**: Score and notification display
 - **PausePanel**: Pause screen with interactive buttons
 - **GameOverPanel**: Game over screen with restart option
+- **MainMenuPanel**: Main menu with title and navigation options
+- **ControlsPanel**: Comprehensive game controls reference screen
 
-**Result**: Each class now focuses on doing one thing well, which makes the code easier to test and maintain.
+**Result**: Each class now focuses on doing one thing well, which makes the code easier to test and maintain. The codebase now has 12 focused UI classes instead of the original monolithic GuiController.
 
 ---
 
@@ -491,16 +521,6 @@ All dependencies are managed via Maven and automatically downloaded:
 
 The following features were considered but not implemented due to time constraints and scope prioritization:
 
-### 1. Hold Piece Mechanism
-**Reason**: This feature would require significant changes to the game state management:
-- New data structure to store held piece
-- Logic to swap current piece with held piece
-- UI panel for displaying held piece
-- Input handling for hold action (e.g., C key)
-- Rules for preventing hold abuse (one hold per piece drop)
-
-**Complexity**: Medium - requires game logic changes
-**Status**: Not started
 
 ### 3. Combo System
 **Reason**: A combo system rewarding consecutive line clears (e.g., Tetris → Tetris) would need:
@@ -597,6 +617,14 @@ The following features were considered but not implemented due to time constrain
    
 8. **`com.comp2042.ui.GameOverPanel`**
    - Game over screen with restart option
+
+9. **`com.comp2042.ui.MainMenuPanel`**
+   - Main menu screen with title and navigation options
+   - "Start Game" and "Controls" buttons
+
+10. **`com.comp2042.ui.ControlsPanel`**
+    - Comprehensive game controls reference screen
+    - Categorized control explanations with proper styling
    - Reflection effect for visual polish
 
 ### Color Strategy Package (`com.comp2042.ui.color`)

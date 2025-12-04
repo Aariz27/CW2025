@@ -133,3 +133,21 @@
 .game-button:pressed {
     -fx-background-color: linear-gradient(#585858 0%, #131713 25%, #272827 75%, #656565 100%);
 }
+
+/* Main menu and controls panel styling */
+.main-menu-background {
+    -fx-background-color: linear-gradient(#2A5058 0%, #61a2b1 100%);
+}
+
+.controls-background {
+    -fx-background-color: linear-gradient(#2A5058 0%, #61a2b1 100%);
+}
+
+/* Controls text styling */
+.controlsText {
+    -fx-font-family: "Let's go Digital";
+    -fx-font-size: 14px;
+    -fx-text-fill: white;
+    -fx-text-alignment: center;
+    -fx-wrap-text: true;
+}

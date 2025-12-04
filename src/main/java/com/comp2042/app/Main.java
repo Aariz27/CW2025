@@ -9,6 +9,8 @@ import javafx.stage.Stage;
 import java.net.URL;
 
 import com.comp2042.ui.GuiController;
+import com.comp2042.ui.MainMenuPanel;
+import com.comp2042.ui.ControlsPanel;
 import com.comp2042.game.board.Board;
 import com.comp2042.game.board.SimpleBoard;
 import com.comp2042.game.controller.GameController;
@@ -27,29 +29,92 @@ import com.comp2042.game.controller.GameController;
  */
 public class Main extends Application {
 
+    private Scene menuScene;
+    private Scene controlsScene;
+    private Scene gameScene;
+    private GuiController guiController;
+    private GameController gameController;
+
     /**
      * Initializes and starts the Tetris game application.
-     * Loads the FXML layout, creates the game board, and wires up
-     * the controller with dependency injection.
-     * 
+     * Shows main menu first, then allows navigation to game or controls.
+     *
      * @param primaryStage the primary stage for this application
      * @throws Exception if FXML loading fails or resources are missing
      */
     @Override
     public void start(Stage primaryStage) throws Exception {
+        primaryStage.setTitle("TetrisJFX");
 
+        // Create menu scene
+        createMenuScene(primaryStage);
+
+        // Create controls scene
+        createControlsScene(primaryStage);
+
+        // Create game scene (but don't initialize game yet)
+        createGameScene();
+
+        // Show menu first
+        primaryStage.setScene(menuScene);
+        primaryStage.show();
+    }
+
+    /**
+     * Creates the main menu scene with Start Game and Controls options.
+     */
+    private void createMenuScene(Stage primaryStage) {
+        MainMenuPanel menuPanel = new MainMenuPanel();
+
+        menuPanel.getStartGameButton().setOnAction(e -> {
+            // Initialize game when starting
+            if (gameController == null) {
+                initializeGame();
+            }
+            primaryStage.setScene(gameScene);
+        });
+
+        menuPanel.getControlsButton().setOnAction(e -> {
+            primaryStage.setScene(controlsScene);
+        });
+
+        menuScene = new Scene(menuPanel, 432, 612);
+        menuScene.getStylesheets().add(getClass().getClassLoader().getResource("window_style.css").toExternalForm());
+    }
+
+    /**
+     * Creates the controls scene displaying game controls.
+     */
+    private void createControlsScene(Stage primaryStage) {
+        ControlsPanel controlsPanel = new ControlsPanel();
+
+        controlsPanel.getBackButton().setOnAction(e -> {
+            primaryStage.setScene(menuScene);
+        });
+
+        controlsScene = new Scene(controlsPanel, 432, 612);
+        controlsScene.getStylesheets().add(getClass().getClassLoader().getResource("window_style.css").toExternalForm());
+    }
+
+    /**
+     * Creates the game scene with the actual Tetris game.
+     */
+    private void createGameScene() throws Exception {
         URL location = getClass().getClassLoader().getResource("gameLayout.fxml");
         FXMLLoader fxmlLoader = new FXMLLoader(location);
         Parent root = fxmlLoader.load();
-        GuiController c = fxmlLoader.getController();
+        guiController = fxmlLoader.getController();
 
-        primaryStage.setTitle("TetrisJFX");
-        Scene scene = new Scene(root, 432, 612);
-        primaryStage.setScene(scene);
-        primaryStage.show();
+        gameScene = new Scene(root, 432, 612);
+        gameScene.getStylesheets().add(getClass().getClassLoader().getResource("window_style.css").toExternalForm());
+    }
 
+    /**
+     * Initializes the game components when the user chooses to start playing.
+     */
+    private void initializeGame() {
         Board board = new SimpleBoard(25, 10);
-        new GameController(c, board);
+        gameController = new GameController(guiController, board);
     }
 
     /**
