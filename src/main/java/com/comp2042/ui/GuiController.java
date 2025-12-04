@@ -10,6 +10,7 @@ import javafx.scene.Group;
 import javafx.scene.effect.Reflection;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
@@ -76,6 +77,14 @@ public class GuiController implements Initializable {
     /** Panel for displaying the ghost piece (landing preview) */
     @FXML
     private GridPane ghostPanel;
+    
+    /** Panel for displaying the next piece preview */
+    @FXML
+    private GridPane nextBrickPanel;
+    
+    /** Container pane for the next brick preview */
+    @FXML
+    private Pane nextBrickContainer;
 
     /** Panel displayed when game is over */
     @FXML
@@ -117,6 +126,9 @@ public class GuiController implements Initializable {
     
     /** 2D array of rectangles representing the ghost piece */
     private Rectangle[][] ghostRectangles;
+    
+    /** 2D array of rectangles representing the next piece preview */
+    private Rectangle[][] nextBrickRectangles;
     
     /** Timer for automatic brick dropping */
     private GameTimer gameTimer;
@@ -190,7 +202,7 @@ public class GuiController implements Initializable {
                     refreshGameBackground(currentBoardMatrix);
                 }
                 if (currentViewData != null) {
-                    // Refresh brick also refreshes ghost pieces
+                    // Refresh brick also refreshes ghost pieces and next brick preview
                     refreshBrick(currentViewData);
                 }
                 
@@ -250,6 +262,9 @@ public class GuiController implements Initializable {
         // Position ghost panel at the landing position
         positionGhostPanel(brick);
 
+        // Initialize next brick preview panel
+        initNextBrickPreview(brick);
+
         // Start timer with level 1 speed (400ms)
         startTimerWithCurrentLevelSpeed();
     }
@@ -284,6 +299,9 @@ public class GuiController implements Initializable {
             // Update ghost piece position and appearance
             positionGhostPanel(brick);
             updateGhostRectangles(brick);
+            
+            // Update next brick preview
+            updateNextBrickPreview(brick);
         }
     }
     
@@ -308,6 +326,63 @@ public class GuiController implements Initializable {
                 ghostRectangles[i][j].setFill(ColorMapper.getGhostFillColor(brick.getBrickData()[i][j]));
                 ghostRectangles[i][j].setArcHeight(9);
                 ghostRectangles[i][j].setArcWidth(9);
+            }
+        }
+    }
+    
+    /**
+     * Initializes the next brick preview panel.
+     * Creates rectangles to display the upcoming piece.
+     * 
+     * @param brick the initial view data containing next brick information
+     */
+    private void initNextBrickPreview(ViewData brick) {
+        if (brick.getNextBrickData() == null || brick.getNextBrickData().length == 0) {
+            return;
+        }
+        
+        int[][] nextBrickData = brick.getNextBrickData();
+        nextBrickRectangles = new Rectangle[nextBrickData.length][nextBrickData[0].length];
+        
+        for (int i = 0; i < nextBrickData.length; i++) {
+            for (int j = 0; j < nextBrickData[i].length; j++) {
+                Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
+                rectangle.setFill(ColorMapper.getFillColor(nextBrickData[i][j]));
+                rectangle.setArcHeight(9);
+                rectangle.setArcWidth(9);
+                nextBrickRectangles[i][j] = rectangle;
+                nextBrickPanel.add(rectangle, j, i);
+            }
+        }
+    }
+    
+    /**
+     * Updates the next brick preview display.
+     * Called whenever a new piece spawns and the next piece changes.
+     * 
+     * @param brick the view data containing updated next brick information
+     */
+    private void updateNextBrickPreview(ViewData brick) {
+        if (brick.getNextBrickData() == null || nextBrickRectangles == null) {
+            return;
+        }
+        
+        int[][] nextBrickData = brick.getNextBrickData();
+        
+        // If the next brick shape changed size, reinitialize
+        if (nextBrickRectangles.length != nextBrickData.length || 
+            nextBrickRectangles[0].length != nextBrickData[0].length) {
+            nextBrickPanel.getChildren().clear();
+            initNextBrickPreview(brick);
+            return;
+        }
+        
+        // Update colors
+        for (int i = 0; i < nextBrickData.length; i++) {
+            for (int j = 0; j < nextBrickData[i].length; j++) {
+                nextBrickRectangles[i][j].setFill(ColorMapper.getFillColor(nextBrickData[i][j]));
+                nextBrickRectangles[i][j].setArcHeight(9);
+                nextBrickRectangles[i][j].setArcWidth(9);
             }
         }
     }

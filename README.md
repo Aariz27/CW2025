@@ -290,7 +290,34 @@ All dependencies are managed via Maven and automatically downloaded:
 
 ---
 
-### 8. Visual Themes System
+### 8. Next Piece Preview
+**Description**: Real-time preview of the upcoming tetromino piece, allowing players to plan their next moves strategically.
+
+**Features**:
+- **Live Preview**: Shows the actual shape of the next piece using full brick size (24px)
+- **Dynamic Positioning**: Automatically adapts to different brick shapes and dimensions
+- **Theme Integration**: Preview colors update dynamically when switching themes (Classic, Retro, Neon)
+- **Clean Layout**: Positioned in right sidebar below score/level/high score labels
+- **Backend Ready**: Utilizes existing `ViewData.getNextBrickData()` and `RandomBrickGenerator` queue
+
+**Implementation**:
+- `GuiController` manages preview rendering with `nextBrickRectangles` array and `nextBrickPanel`
+- `initNextBrickPreview()` initializes preview panel on game start
+- `updateNextBrickPreview()` refreshes preview when new pieces spawn
+- Integrated into `refreshBrick()` for synchronized updates with active piece
+- Theme changes trigger preview color updates
+
+**Technical Details**:
+- `nextBrickContainer` Pane (120×120px) holds preview area
+- `nextBrickPanel` GridPane renders individual brick rectangles
+- Preview uses same visual style as active pieces for consistency
+- "Next Piece" label positioned above preview area
+
+**Design**: Provides strategic gameplay advantage without cluttering the interface. Players can plan sequences and avoid surprise pieces.
+
+---
+
+### 9. Visual Themes System
 **Description**: A robust theming system using Strategy and Singleton patterns that allows players to switch between distinct visual styles during gameplay without affecting game mechanics or state.
 
 **Features**:
@@ -334,7 +361,7 @@ All dependencies are managed via Maven and automatically downloaded:
 
 ---
 
-### 9. Visual Feedback Effects
+### 10. Visual Feedback Effects
 **Description**: Dynamic visual effects that provide immediate feedback when lines are cleared, enhancing the game's visual polish without affecting gameplay mechanics.
 
 **Features**:
@@ -364,7 +391,7 @@ All dependencies are managed via Maven and automatically downloaded:
 
 ---
 
-### 10. Comprehensive JUnit Test Suite
+### 11. Comprehensive JUnit Test Suite
 **Description**: Growing test suite with 200+ test methods across 35+ test files covering all major components. Additional tests continue to be added as new features are implemented and refactored.
 
 **Test Coverage**:
@@ -388,7 +415,7 @@ All dependencies are managed via Maven and automatically downloaded:
 
 ---
 
-### 11. SOLID Principles Applied Throughout
+### 12. SOLID Principles Applied Throughout
 
 - **Single Responsibility Principle**: Each class has one reason to change (e.g., `InputHandler`, `GameTimer`, `GameViewModel`)
 - **Open/Closed Principle**: Open for extension via strategies/commands, closed for modification
@@ -398,7 +425,7 @@ All dependencies are managed via Maven and automatically downloaded:
 
 ---
 
-### 12. Complete Game Controls
+### 13. Complete Game Controls
 
 | Key | Action | Description |
 |-----|--------|-------------|
@@ -435,13 +462,7 @@ All dependencies are managed via Maven and automatically downloaded:
 
 The following features were considered but not implemented due to time constraints and scope prioritization:
 
-### 1. Next Piece Preview Display
-**Reason**: This feature was planned to show the upcoming brick to the player using the existing `nextBrickData` in `ViewData`. While the backend data is already available, implementing the UI visualization requires additional FXML layout work and GridPane management. This was prioritized after the Visual Themes System and has not been started yet.
-
-**Complexity**: Low - mainly UI work
-**Status**: Backend data available, frontend not implemented
-
-### 2. Hold Piece Mechanism
+### 1. Hold Piece Mechanism
 **Reason**: This feature would require significant changes to the game state management:
 - New data structure to store held piece
 - Logic to swap current piece with held piece
@@ -766,7 +787,10 @@ The following features were considered but not implemented due to time constrain
      - Updated `moveDown()` and `handleHardDrop()` to trigger visual effects when lines are cleared
      - **Theme System**: Added `initThemeHandling()` to listen for theme changes, swap CSS stylesheets dynamically, and trigger full board repaint
      - Enables runtime visual theme switching without application restart
-   - **Reason**: Enforce Single Responsibility Principle, improve testability, support new features, enhance visual presentation, provide satisfying visual feedback, and enable dynamic theme switching
+     - **Next Piece Preview**: Added `@FXML` references for `nextBrickPanel` and `nextBrickContainer`, `nextBrickRectangles` array for preview rendering
+     - Added `initNextBrickPreview()` to initialize preview panel on game start, `updateNextBrickPreview()` to refresh when new pieces spawn
+     - Integrated preview updates into `refreshBrick()` for synchronized updates with active piece
+   - **Reason**: Enforce Single Responsibility Principle, improve testability, support new features, enhance visual presentation, provide satisfying visual feedback, enable dynamic theme switching, and add strategic next piece preview
    
 2. **`com.comp2042.game.board.SimpleBoard`**
    - **Changes**:
@@ -809,14 +833,17 @@ The following features were considered but not implemented due to time constrain
      - Added `<GridPane fx:id="ghostPanel">` for ghost piece rendering
      - Added `<Label fx:id="levelLabel">` for level display
      - Added `<Label fx:id="highScoreLabel">` for high score display
+     - Added `<Label fx:id="nextBrickLabel">` at position (270, 120) for "Next Piece" header
+     - Added `nextBrickContainer` Pane (120×120px) to hold the preview area
+     - Added `nextBrickPanel` GridPane inside container for rendering the brick preview
      - Added `<Rectangle fx:id="gameOverOverlay">` covering full window for dimming effect
      - Ensured `BorderPane` has `fx:id="gameBoard"` for visual effect style class toggling (shockwave)
-     - Removed previous `energyLabel` - HUD now shows only Score, Level, and High Score
+     - Removed previous `energyLabel` - HUD now shows only Score, Level, High Score, and Next Piece
      - Moved `GameOverPanel` from Group to root Pane for proper z-ordering
      - Scaled all UI positions by 20% to accommodate larger game elements
      - Adjusted game panel position, notification group, and score label positions
      - Added Rectangle import for overlay support
-   - **Reason**: Support ghost piece visualization, level display, high score display, visual feedback effects, and improve game over screen visibility
+   - **Reason**: Support ghost piece visualization, level display, high score display, next piece preview, visual feedback effects, and improve game over screen visibility
    
 7. **`src/main/resources/window_style.css`**
    - **Changes**:
@@ -826,8 +853,12 @@ The following features were considered but not implemented due to time constrain
      - Updated `.gameOverStyle` with white text color, semi-transparent red background, and better sizing
      - Added `.game-over-overlay` style with semi-transparent gray dimming effect
      - Added `.shockwave` style for board border flash effect on line clears (bright white drop shadow)
+     - **Theme-Specific Next Piece Preview Styles**:
+       - Classic theme: Semi-transparent dark background with whitesmoke border and white label text
+       - Neon theme: Dark background with glowing green border and label (#00ff00)
+       - Retro theme: Light green background with dark green border and label (#0f380f on #8bac0f)
      - Removed previous `.gameBoard.energy-low/mid/high` energy tier styles (no longer used)
-   - **Reason**: Improve UI polish, user experience, game over screen visibility, and provide visual feedback for line clears
+   - **Reason**: Improve UI polish, user experience, game over screen visibility, provide visual feedback for line clears, and support theme-consistent next piece preview styling
    
 8. **`pom.xml`**
    - **Changes**:
@@ -1101,6 +1132,7 @@ All of these problems were eventually resolved without compromising the code qua
 - Pause/resume (P key, interactive panel)
 - Level system (10 levels, adaptive difficulty)
 - Ghost piece (semi-transparent preview, real-time updates)
+- Next piece preview (strategic planning with real-time preview)
 - High score tracking (persistent storage)
 - Visual feedback effects (shockwave flash and brick bounce on line clears)
 - Visual themes system (3 themes: Classic, Retro, Neon - switchable with T key)
@@ -1110,6 +1142,6 @@ All of these problems were eventually resolved without compromising the code qua
 
 ## Conclusion
 
-This project demonstrates application of SOLID principles and design patterns to transform a legacy codebase. The refactoring work has focused on improving code organization, maintainability, and extensibility while adding meaningful gameplay enhancements like the level system, ghost piece preview, hard drop functionality, high score tracking, visual feedback effects, and a robust visual themes system allowing runtime style switching.
+This project demonstrates application of SOLID principles and design patterns to transform a legacy codebase. The refactoring work has focused on improving code organization, maintainability, and extensibility while adding meaningful gameplay enhancements like the level system, ghost piece preview, next piece preview, hard drop functionality, high score tracking, visual feedback effects, and a robust visual themes system allowing runtime style switching.
 
 All implemented features so far are fully functional and tested. The codebase is well-organized and structured for maintainability. Several unexpected technical challenges have been encountered and resolved during development, particularly around UI responsiveness, test framework compatibility, and JavaFX threading requirements.
