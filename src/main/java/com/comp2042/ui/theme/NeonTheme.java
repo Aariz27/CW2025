@@ -9,6 +9,9 @@ import javafx.scene.paint.Paint;
  */
 public class NeonTheme implements Theme {
 
+    /** Creates the Neon theme. */
+    public NeonTheme() { }
+
     @Override
     public String getName() {
         return "Neon";
@@ -38,4 +41,3 @@ public class NeonTheme implements Theme {
         return Color.BLACK;
     }
 }
-

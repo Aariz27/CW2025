@@ -29,6 +29,9 @@ import com.comp2042.game.controller.GameController;
  */
 public class Main extends Application {
 
+    /** Default JavaFX application constructor. */
+    public Main() { }
+
     private Scene menuScene;
     private Scene controlsScene;
     private Scene gameScene;

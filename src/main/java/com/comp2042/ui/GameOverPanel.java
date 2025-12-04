@@ -14,6 +14,7 @@ public class GameOverPanel extends BorderPane {
 
     private final Button newGameButton;
 
+    /** Creates the game over panel with the restart action. */
     public GameOverPanel() {
         final Label gameOverLabel = new Label("GAME OVER");
         gameOverLabel.getStyleClass().add("gameOverStyle");

@@ -8,6 +8,10 @@ import javafx.scene.paint.Paint;
  * Implements ColorStrategy interface following Strategy pattern.
  */
 public class BurlyWoodColorStrategy implements ColorStrategy {
+
+    /** Creates a BurlyWood color strategy. */
+    public BurlyWoodColorStrategy() { }
+
     @Override
     public Paint getColor() {
         return Color.BURLYWOOD;
@@ -18,4 +22,3 @@ public class BurlyWoodColorStrategy implements ColorStrategy {
         return 7;
     }
 }
-

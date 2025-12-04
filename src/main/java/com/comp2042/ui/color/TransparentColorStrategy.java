@@ -8,6 +8,10 @@ import javafx.scene.paint.Paint;
  * Implements ColorStrategy interface following Strategy pattern.
  */
 public class TransparentColorStrategy implements ColorStrategy {
+
+    /** Creates a Transparent color strategy. */
+    public TransparentColorStrategy() { }
+
     @Override
     public Paint getColor() {
         return Color.TRANSPARENT;
@@ -18,4 +22,3 @@ public class TransparentColorStrategy implements ColorStrategy {
         return 0;
     }
 }
-

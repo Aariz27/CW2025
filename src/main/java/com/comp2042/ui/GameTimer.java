@@ -11,6 +11,9 @@ import javafx.util.Duration;
 public final class GameTimer {
     private Timeline timeline;
 
+    /** Creates a timer ready to start/stop game ticks. */
+    public GameTimer() { }
+
     /**
      * Starts the game timer with the specified interval.
      * 

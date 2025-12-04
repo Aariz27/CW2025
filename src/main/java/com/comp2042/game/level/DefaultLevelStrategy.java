@@ -10,6 +10,9 @@ package com.comp2042.game.level;
  * - Strategy Pattern: Concrete implementation of LevelStrategy interface
  */
 public class DefaultLevelStrategy implements LevelStrategy {
+
+    /** Creates the default level progression strategy. */
+    public DefaultLevelStrategy() { }
     
     // Minimum drop speed (maximum difficulty)
     private static final double MIN_DROP_SPEED_MS = 60.0;
@@ -71,4 +74,3 @@ public class DefaultLevelStrategy implements LevelStrategy {
         return new Level(levelNumber, speed, multiplier);
     }
 }
-

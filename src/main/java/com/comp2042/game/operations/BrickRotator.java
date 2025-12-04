@@ -16,6 +16,9 @@ public class BrickRotator {
     private Brick brick;
     private int currentShape = 0;
 
+    /** Creates a brick rotator with no active brick set. */
+    public BrickRotator() { }
+
     /**
      * Calculates and returns information about the next rotation of the current brick.
      * Rotations cycle through all available orientations.

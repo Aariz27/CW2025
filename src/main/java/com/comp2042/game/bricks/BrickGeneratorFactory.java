@@ -7,7 +7,14 @@ package com.comp2042.game.bricks;
  */
 public class BrickGeneratorFactory {
 
+    /** Prevent instantiation of the factory utility class. */
+    private BrickGeneratorFactory() { }
+
+    /**
+     * Supported generator types.
+     */
     public enum GeneratorType {
+        /** Random uniform generator. */
         RANDOM
         // Can be extended: WEIGHTED, SEQUENTIAL, etc.
     }
@@ -33,4 +40,3 @@ public class BrickGeneratorFactory {
         return create(GeneratorType.RANDOM);
     }
 }
-

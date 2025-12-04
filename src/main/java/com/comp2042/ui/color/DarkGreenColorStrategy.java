@@ -8,6 +8,10 @@ import javafx.scene.paint.Paint;
  * Implements ColorStrategy interface following Strategy pattern.
  */
 public class DarkGreenColorStrategy implements ColorStrategy {
+
+    /** Creates a DarkGreen color strategy. */
+    public DarkGreenColorStrategy() { }
+
     @Override
     public Paint getColor() {
         return Color.DARKGREEN;
@@ -18,4 +22,3 @@ public class DarkGreenColorStrategy implements ColorStrategy {
         return 3;
     }
 }
-

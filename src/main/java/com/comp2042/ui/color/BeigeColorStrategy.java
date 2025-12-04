@@ -8,6 +8,10 @@ import javafx.scene.paint.Paint;
  * Implements ColorStrategy interface following Strategy pattern.
  */
 public class BeigeColorStrategy implements ColorStrategy {
+
+    /** Creates a Beige color strategy. */
+    public BeigeColorStrategy() { }
+
     @Override
     public Paint getColor() {
         return Color.BEIGE;
@@ -18,4 +22,3 @@ public class BeigeColorStrategy implements ColorStrategy {
         return 6;
     }
 }
-

@@ -11,6 +11,9 @@ public final class LinesClearedTracker {
     
     private final IntegerProperty totalLines = new SimpleIntegerProperty(0);
 
+    /** Creates a tracker with zeroed total lines. */
+    public LinesClearedTracker() { }
+
     /**
      * Returns the lines property for binding.
      * UI components can bind to this for automatic updates (Observer pattern).

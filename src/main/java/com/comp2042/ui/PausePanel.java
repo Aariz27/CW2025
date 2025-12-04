@@ -15,6 +15,7 @@ public class PausePanel extends BorderPane {
     private final Button resumeButton;
     private final Button newGameButton;
 
+    /** Creates the pause panel with resume and new game actions. */
     public PausePanel() {
         final Label pauseLabel = new Label("PAUSED");
         pauseLabel.getStyleClass().add("bonusStyle");
@@ -51,4 +52,3 @@ public class PausePanel extends BorderPane {
     }
 
 }
-

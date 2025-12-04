@@ -14,6 +14,9 @@ public class RetroTheme implements Theme {
     private static final Color LIGHT_GREEN = Color.web("#8bac0f");
     private static final Color LIGHTEST_GREEN = Color.web("#9bbc0f");
 
+    /** Creates the Retro theme. */
+    public RetroTheme() { }
+
     @Override
     public String getName() {
         return "Retro";
@@ -41,4 +44,3 @@ public class RetroTheme implements Theme {
         return LIGHTEST_GREEN;
     }
 }
-

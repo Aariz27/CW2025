@@ -8,6 +8,10 @@ import javafx.scene.paint.Paint;
  * Implements ColorStrategy interface following Strategy pattern.
  */
 public class BlueVioletColorStrategy implements ColorStrategy {
+
+    /** Creates a BlueViolet color strategy. */
+    public BlueVioletColorStrategy() { }
+
     @Override
     public Paint getColor() {
         return Color.BLUEVIOLET;
@@ -18,4 +22,3 @@ public class BlueVioletColorStrategy implements ColorStrategy {
         return 2;
     }
 }
-

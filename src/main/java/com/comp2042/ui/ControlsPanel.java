@@ -14,6 +14,7 @@ public class ControlsPanel extends BorderPane {
 
     private final Button backButton;
 
+    /** Builds the controls/instructions screen. */
     public ControlsPanel() {
         // Set background style
         getStyleClass().add("controls-background");

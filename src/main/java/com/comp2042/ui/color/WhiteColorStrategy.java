@@ -9,6 +9,10 @@ import javafx.scene.paint.Paint;
  * Used as default strategy when color code is not recognized.
  */
 public class WhiteColorStrategy implements ColorStrategy {
+
+    /** Creates a White color strategy (fallback). */
+    public WhiteColorStrategy() { }
+
     @Override
     public Paint getColor() {
         return Color.WHITE;
@@ -19,4 +23,3 @@ public class WhiteColorStrategy implements ColorStrategy {
         return -1; // Default/fallback code
     }
 }
-

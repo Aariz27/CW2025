@@ -8,6 +8,10 @@ import javafx.scene.paint.Paint;
  * Implements ColorStrategy interface following Strategy pattern.
  */
 public class YellowColorStrategy implements ColorStrategy {
+
+    /** Creates a Yellow color strategy. */
+    public YellowColorStrategy() { }
+
     @Override
     public Paint getColor() {
         return Color.YELLOW;
@@ -18,4 +22,3 @@ public class YellowColorStrategy implements ColorStrategy {
         return 4;
     }
 }
-

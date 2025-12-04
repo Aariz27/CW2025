@@ -1,0 +1,13 @@
+com.comp2042.app
+com.comp2042.game.board
+com.comp2042.game.bricks
+com.comp2042.game.controller
+com.comp2042.game.controller.commands
+com.comp2042.game.data
+com.comp2042.game.events
+com.comp2042.game.level
+com.comp2042.game.operations
+com.comp2042.game.score
+com.comp2042.ui
+com.comp2042.ui.color
+com.comp2042.ui.theme

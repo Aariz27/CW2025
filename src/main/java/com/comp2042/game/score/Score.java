@@ -12,9 +12,14 @@ public final class Score {
 
     private final IntegerProperty score = new SimpleIntegerProperty(0);
 
+    /** Creates a score tracker initialized to zero. */
+    public Score() { }
+
     /**
      * Returns the score property for binding.
      * UI components can bind to this for automatic updates (Observer pattern).
+     *
+     * @return the score property
      */
     public IntegerProperty scoreProperty() {
         return score;

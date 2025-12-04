@@ -11,6 +11,9 @@ import java.util.Map;
  */
 public class ColorStrategyRegistry {
     private static final Map<Integer, ColorStrategy> strategies = new HashMap<>();
+
+    /** Prevent instantiation of this registry utility class. */
+    private ColorStrategyRegistry() { }
     
     // Register all available color strategies at initialization
     static {
@@ -40,4 +43,3 @@ public class ColorStrategyRegistry {
         return strategy.getColor();
     }
 }
-

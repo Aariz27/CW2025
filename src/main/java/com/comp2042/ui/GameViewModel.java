@@ -14,6 +14,9 @@ public final class GameViewModel {
     // Keep brick sizing consistent with GuiController (24px)
     private static final int BRICK_SIZE = 24;
 
+    /** Creates a view model for positioning and rendering bricks and board. */
+    public GameViewModel() { }
+
     /**
      * Positions the brick panel based on the current brick's position.
      * 

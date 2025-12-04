@@ -184,6 +184,9 @@ public class GuiController implements Initializable {
     /** Cache of current view data for repainting during theme switches */
     private ViewData currentViewData;
 
+    /** Default constructor for JavaFX injection. */
+    public GuiController() { }
+
     /**
      * Initializes the GUI controller when the FXML layout is loaded.
      * Sets up fonts, focus handling, game timer, visual effects, and theme handling.

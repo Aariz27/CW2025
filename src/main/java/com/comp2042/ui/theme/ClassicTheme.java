@@ -10,6 +10,9 @@ import javafx.scene.paint.Paint;
  */
 public class ClassicTheme implements Theme {
 
+    /** Creates the Classic theme. */
+    public ClassicTheme() { }
+
     @Override
     public String getName() {
         return "Classic";
@@ -30,4 +33,3 @@ public class ClassicTheme implements Theme {
         return Color.TRANSPARENT; // Classic uses an image background set in CSS
     }
 }
-

@@ -8,6 +8,10 @@ import javafx.scene.paint.Paint;
  * Implements ColorStrategy interface following Strategy pattern.
  */
 public class AquaColorStrategy implements ColorStrategy {
+
+    /** Creates an Aqua color strategy. */
+    public AquaColorStrategy() { }
+
     @Override
     public Paint getColor() {
         return Color.AQUA;
@@ -18,4 +22,3 @@ public class AquaColorStrategy implements ColorStrategy {
         return 1;
     }
 }
-

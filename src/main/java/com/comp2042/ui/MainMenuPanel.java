@@ -15,6 +15,7 @@ public class MainMenuPanel extends BorderPane {
     private final Button startGameButton;
     private final Button controlsButton;
 
+    /** Creates the main menu with start and controls options. */
     public MainMenuPanel() {
         // Set background style
         getStyleClass().add("main-menu-background");

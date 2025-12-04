@@ -54,6 +54,11 @@ public final class BoardStateSnapshot {
         this.level = level;
     }
 
+    /**
+     * Gets a defensive copy of the board matrix at snapshot time.
+     *
+     * @return copied board matrix
+     */
     public int[][] getBoardMatrix() {
         return MatrixOperations.copy(boardMatrix);
     }
