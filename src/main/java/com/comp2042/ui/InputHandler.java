@@ -27,11 +27,13 @@ public final class InputHandler {
     private final Runnable onPauseRequested;
     private final Runnable onThemeToggleRequested;
     private final Runnable onHoldRequested;
+    private final Runnable onTimeSlowRequested;
+    private final Runnable onUndoRequested;
     private final Consumer<ViewData> onBrickMoved;
 
     /**
      * Creates a new InputHandler.
-     *
+     * 
      * @param eventListener the listener for game events
      * @param isPause the pause state property
      * @param isGameOver the game over state property
@@ -41,6 +43,8 @@ public final class InputHandler {
      * @param onPauseRequested callback for pause requests (P key)
      * @param onHoldRequested callback for hold piece requests (C key)
      * @param onThemeToggleRequested callback for theme toggle requests (T key)
+     * @param onTimeSlowRequested callback for time slow requests (G key)
+     * @param onUndoRequested callback for undo requests (U key)
      * @param onBrickMoved callback to refresh brick after movement (accepts ViewData)
      */
     public InputHandler(InputEventListener eventListener,
@@ -52,6 +56,8 @@ public final class InputHandler {
                         Runnable onPauseRequested,
                         Runnable onHoldRequested,
                         Runnable onThemeToggleRequested,
+                        Runnable onTimeSlowRequested,
+                        Runnable onUndoRequested,
                         Consumer<ViewData> onBrickMoved) {
         this.eventListener = eventListener;
         this.isPause = isPause;
@@ -62,6 +68,8 @@ public final class InputHandler {
         this.onPauseRequested = onPauseRequested;
         this.onHoldRequested = onHoldRequested;
         this.onThemeToggleRequested = onThemeToggleRequested;
+        this.onTimeSlowRequested = onTimeSlowRequested;
+        this.onUndoRequested = onUndoRequested;
         this.onBrickMoved = onBrickMoved;
     }
 
@@ -94,6 +102,14 @@ public final class InputHandler {
                 }
                 if (keyEvent.getCode() == KeyCode.SPACE) {
                     onHardDropRequested.run();
+                    keyEvent.consume();
+                }
+                if (keyEvent.getCode() == KeyCode.G) {
+                    onTimeSlowRequested.run();
+                    keyEvent.consume();
+                }
+                if (keyEvent.getCode() == KeyCode.U) {
+                    onUndoRequested.run();
                     keyEvent.consume();
                 }
             }

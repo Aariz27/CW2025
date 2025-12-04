@@ -21,12 +21,30 @@ public final class Score {
     }
 
     /**
+     * Gets the current score value.
+     *
+     * @return the score
+     */
+    public int get() {
+        return score.getValue();
+    }
+
+    /**
      * Adds points to the score.
      * 
      * @param i the points to add
      */
     public void add(int i){
         score.setValue(score.getValue() + i);
+    }
+
+    /**
+     * Sets the score to the provided value.
+     *
+     * @param value the new score value
+     */
+    public void set(int value) {
+        score.setValue(value);
     }
 
     /**

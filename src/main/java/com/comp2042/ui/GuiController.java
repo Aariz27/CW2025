@@ -15,6 +15,8 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.collections.ObservableList;
+import javafx.animation.PauseTransition;
+import javafx.util.Duration;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -26,6 +28,8 @@ import com.comp2042.game.events.EventType;
 import com.comp2042.game.events.EventSource;
 import com.comp2042.game.data.ViewData;
 import com.comp2042.game.data.DownData;
+import com.comp2042.game.data.UndoData;
+import com.comp2042.game.controller.GameController;
 import com.comp2042.game.level.LevelManager;
 import com.comp2042.game.score.HighScoreManager;
 import com.comp2042.ui.theme.Theme;
@@ -56,6 +60,10 @@ public class GuiController implements Initializable {
 
     /** Size of each brick block in pixels */
     private static final int BRICK_SIZE = 24;
+    /** Additional milliseconds to apply when slowing time */
+    private static final double TIME_SLOW_OFFSET_MS = 500.0;
+    /** Duration in milliseconds for the slow-time effect */
+    private static final int TIME_SLOW_DURATION_MS = 5000;
     
 
     /** Main game board grid panel */
@@ -128,6 +136,8 @@ public class GuiController implements Initializable {
 
     /** Listener for handling input events from the UI */
     private InputEventListener eventListener;
+    /** Direct reference for ability-related actions */
+    private GameController gameController;
 
     /** 2D array of rectangles representing the active brick */
     private Rectangle[][] rectangles;
@@ -143,6 +153,10 @@ public class GuiController implements Initializable {
     
     /** Timer for automatic brick dropping */
     private GameTimer gameTimer;
+    /** Active slow-time flag */
+    private boolean timeSlowActive;
+    /** Timer to end slow-time effect */
+    private PauseTransition timeSlowTimer;
 
     /** Property tracking whether the game is paused */
     private final BooleanProperty isPause = new SimpleBooleanProperty();
@@ -286,10 +300,14 @@ public class GuiController implements Initializable {
     private void startTimerWithCurrentLevelSpeed() {
         if (levelManager != null) {
             double speed = levelManager.getCurrentLevelConfig().getDropSpeedMs();
+            if (timeSlowActive) {
+                speed += TIME_SLOW_OFFSET_MS;
+            }
             gameTimer.start(() -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD)), speed);
         } else {
             // Fallback to default speed if level manager not set
-            gameTimer.start(() -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD)), 400.0);
+            double speed = timeSlowActive ? 400.0 + TIME_SLOW_OFFSET_MS : 400.0;
+            gameTimer.start(() -> moveDown(new MoveEvent(EventType.DOWN, EventSource.THREAD)), speed);
         }
     }
 
@@ -582,6 +600,68 @@ public class GuiController implements Initializable {
     }
 
     /**
+     * Activates the temporary slow-time power if available.
+     * Slows automatic drops for a short duration.
+     */
+    private void handleTimeSlow() {
+        if (isPause.getValue() == Boolean.TRUE || isGameOver.getValue() == Boolean.TRUE) {
+            gamePanel.requestFocus();
+            return;
+        }
+        if (gameController == null || timeSlowActive) {
+            gamePanel.requestFocus();
+            return;
+        }
+        if (!gameController.consumeTimeSlowCharge()) {
+            gamePanel.requestFocus();
+            return;
+        }
+
+        timeSlowActive = true;
+        if (timeSlowTimer != null) {
+            timeSlowTimer.stop();
+        }
+        startTimerWithCurrentLevelSpeed();
+
+        NotificationPanel notificationPanel = new NotificationPanel("SLOW TIME");
+        groupNotification.getChildren().add(notificationPanel);
+        notificationPanel.showScore(groupNotification.getChildren());
+
+        timeSlowTimer = new PauseTransition(Duration.millis(TIME_SLOW_DURATION_MS));
+        timeSlowTimer.setOnFinished(e -> {
+            timeSlowActive = false;
+            startTimerWithCurrentLevelSpeed();
+        });
+        timeSlowTimer.play();
+        gamePanel.requestFocus();
+    }
+
+    /**
+     * Attempts to undo the last move when the ability is available.
+     */
+    private void handleUndo() {
+        if (isPause.getValue() == Boolean.TRUE || isGameOver.getValue() == Boolean.TRUE) {
+            gamePanel.requestFocus();
+            return;
+        }
+        if (gameController == null) {
+            gamePanel.requestFocus();
+            return;
+        }
+
+        UndoData undoData = gameController.undoLastMove();
+        if (undoData.isPerformed()) {
+            refreshGameBackground(undoData.getBoardMatrix());
+            refreshBrick(undoData.getViewData());
+
+            NotificationPanel notificationPanel = new NotificationPanel("UNDO");
+            groupNotification.getChildren().add(notificationPanel);
+            notificationPanel.showScore(groupNotification.getChildren());
+        }
+        gamePanel.requestFocus();
+    }
+
+    /**
      * Sets the input event listener and configures keyboard input handling.
      * Implements dependency injection pattern.
      * 
@@ -589,6 +669,11 @@ public class GuiController implements Initializable {
      */
     public void setEventListener(InputEventListener eventListener) {
         this.eventListener = eventListener;
+        if (eventListener instanceof GameController controller) {
+            this.gameController = controller;
+        } else {
+            this.gameController = null;
+        }
 
         // Build the InputHandler now that we have an eventListener
         inputHandler = new InputHandler(
@@ -601,6 +686,8 @@ public class GuiController implements Initializable {
                 this::togglePause, // P key - pause/resume
                 this::handleHold, // C key - hold piece
                 () -> ThemeManager.getInstance().cycleTheme(), // T key - cycle theme
+                this::handleTimeSlow, // G key - slow time power
+                this::handleUndo, // U key - undo last move
                 this::refreshBrick // Refresh brick immediately after moves to fix latency
         );
     
@@ -680,6 +767,10 @@ public class GuiController implements Initializable {
      */
     public void gameOver() {
         gameTimer.stop();
+        if (timeSlowTimer != null) {
+            timeSlowTimer.stop();
+        }
+        timeSlowActive = false;
         
         // Clear pause panel if it exists (but not the game over panel container)
         if (pausePanel != null) {
@@ -710,6 +801,10 @@ public class GuiController implements Initializable {
      */
     public void newGame(ActionEvent actionEvent) {
         gameTimer.stop();
+        if (timeSlowTimer != null) {
+            timeSlowTimer.stop();
+        }
+        timeSlowActive = false;
         
         // Hide overlay and game over panel
         gameOverOverlay.setVisible(false);

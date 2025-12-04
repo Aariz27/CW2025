@@ -39,6 +39,15 @@ public class BrickRotator {
     }
 
     /**
+     * Gets the current rotation index.
+     *
+     * @return the rotation index
+     */
+    public int getCurrentShapeIndex() {
+        return currentShape;
+    }
+
+    /**
      * Sets the current rotation position index.
      * 
      * @param currentShape the rotation index to set
@@ -49,7 +58,7 @@ public class BrickRotator {
 
     /**
      * Sets a new brick and resets rotation to the initial position.
-     *
+     * 
      * @param brick the brick to set for rotation management
      */
     public void setBrick(Brick brick) {

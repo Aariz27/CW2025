@@ -237,6 +237,20 @@ All dependencies are managed via Maven and automatically downloaded:
 
 ### 7. New Gameplay Features
 
+#### 7.6 Time Manipulation & Undo (G, U Keys)
+**Description**: Earnable power-ups tied to cleared lines that let you briefly slow time or undo your last move.
+
+**Features**:
+- **Slow Time (G key)**: Every 3 cleared lines grants a charge; pressing **G** slows automatic drop speed by +0.5s for 5 seconds, then reverts.
+- **Undo Last Move (U key)**: Every 5 cleared lines grants an undo; pressing **U** restores the previous board state (board, active/held pieces, queue, score, level, lines).
+- **Safety Checks**: Abilities are disabled while paused or after game over; charges are only consumed when available.
+- **Feedback**: On-screen notifications for activation; timers reset on new game and halt on game over.
+
+**Implementation**:
+- Snapshot-driven restore (`BoardStateSnapshot`, `UndoData`) captured before each user move.
+- Ability gating/consumption in `GameController`; timer adjustment in `GuiController`.
+- Input wiring and controls UI updated for G/U keys.
+
 #### 7.1 Hard Drop (Space Bar)
 **Description**: Instantly drops the current piece to its landing position (ghost position).
 
@@ -493,6 +507,8 @@ All dependencies are managed via Maven and automatically downloaded:
 | **UP** / **W** | Rotate | Rotate piece 90° counterclockwise |
 | **DOWN** / **S** | Soft Drop | Move piece down one cell |
 | **SPACE** | Hard Drop | Instantly drop piece to landing position (+2 pts/cell) |
+| **G** | Slow Time | Spend a charge (every 3 rows) to slow drop speed for 5s |
+| **U** | Undo Last Move | Spend a charge (every 5 rows) to undo your last move |
 | **P** | Pause/Resume | Toggle pause state |
 | **T** | Theme Toggle | Switch between visual themes (Classic/Retro/Neon) |
 | **N** | New Game | Start a new game (anytime) |
@@ -748,6 +764,13 @@ The following features were considered but not implemented due to time constrain
 52. **`com.comp2042.game.data.NextShapeInfo`**
     - Immutable DTO for next piece preview data
 
+**Additional DTOs for time control/undo**
+- **`com.comp2042.game.data.BoardStateSnapshot`**
+  - Immutable snapshot (board matrix, active/held pieces, queue, score, lines, level, offset, rotation) used for undo
+  - Enables full state restoration when undoing the last move
+- **`com.comp2042.game.data.UndoData`**
+  - Result wrapper for undo operations (performed flag, view data, board matrix)
+
 ### Events Package (`com.comp2042.game.events`)
 53. **`com.comp2042.game.events.InputEventListener`** (interface)
     - Event listener interface for input events
@@ -959,10 +982,20 @@ The following features were considered but not implemented due to time constrain
     - **Reason**: Code maintainability
    
 14. **`com.comp2042.game.operations.BrickRotator`**
-    - **Changes**: Enhanced documentation, maintained existing logic
-    - **Reason**: Code clarity
+   - **Changes**: Enhanced documentation, maintained existing logic
+   - **Reason**: Code clarity
 
-**Summary**: 14 files significantly modified, with changes driven by refactoring goals (SRP, DIP, ISP), new feature requirements (ghost piece, level system, hard drop, high score, visual feedback effects, theme system), and UI polish improvements.
+15. **Time Manipulation & Undo Updates**
+   - **`com.comp2042.game.controller.GameController`**: Tracks earned charges (3-line slow time, 5-line undo), captures pre-move snapshots, restores state on undo, exposes ability checks.
+   - **`com.comp2042.ui.GuiController`**: Wires G/U keys, applies temporary drop-speed offset (+500ms for 5s), shows notifications, resets ability timers on new game/game over.
+   - **`com.comp2042.ui.InputHandler`**: Adds callbacks for G (slow time) and U (undo) keys.
+   - **`com.comp2042.game.board.SimpleBoard`**: Creates/restores `BoardStateSnapshot`, syncs score/lines/level/held/queue/rotation on undo.
+   - **`com.comp2042.game.bricks.RandomBrickGenerator`**: Adds queue copy/restore to support undo.
+   - **`com.comp2042.game.operations.BrickRotator`**: Exposes current rotation index for snapshots.
+   - **`com.comp2042.game.score.Score`**, **`com.comp2042.game.level.LinesClearedTracker`**, **`com.comp2042.game.level.LevelManager`**: Add setters/getters to rehydrate state during undo.
+   - **`com.comp2042.ui.ControlsPanel`**: Documents new G/U controls in the controls screen.
+
+**Summary**: 14+ files significantly modified, with changes driven by refactoring goals (SRP, DIP, ISP), new feature requirements (ghost piece, level system, hard drop, high score, visual feedback effects, theme system, time manipulation/undo), and UI polish improvements.
 
 ---
 

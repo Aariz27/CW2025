@@ -40,6 +40,15 @@ public final class LinesClearedTracker {
     }
 
     /**
+     * Sets the total lines cleared to the provided value.
+     *
+     * @param total the total lines to set
+     */
+    public void setTotalLines(int total) {
+        totalLines.setValue(total);
+    }
+
+    /**
      * Resets the lines counter to zero.
      */
     public void reset() {

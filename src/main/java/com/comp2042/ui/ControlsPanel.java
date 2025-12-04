@@ -31,7 +31,14 @@ public class ControlsPanel extends BorderPane {
         final Label actionsLabel = new Label("Actions:");
         actionsLabel.getStyleClass().add("gameOverStyle");
 
-        final Label actionControls = new Label("SPACE      Hard Drop (2 points/cell)\nC          Hold/Swap Piece\nP          Pause/Resume\nT          Change Theme");
+        final Label actionControls = new Label(
+            "SPACE      Hard Drop (2 points/cell)\n" +
+            "C          Hold/Swap Piece\n" +
+            "G          Slow Time (every 3 rows, 5s)\n" +
+            "U          Undo Last Move (every 5 rows)\n" +
+            "P          Pause/Resume\n" +
+            "T          Change Theme"
+        );
         actionControls.getStyleClass().add("controlsText");
         actionControls.setTextAlignment(javafx.scene.text.TextAlignment.CENTER);
 

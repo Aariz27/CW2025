@@ -77,6 +77,15 @@ public final class LevelManager {
         }
         return false; // Level unchanged
     }
+
+    /**
+     * Sets the current level explicitly.
+     *
+     * @param level the level to set
+     */
+    public void setLevel(int level) {
+        currentLevel.setValue(level);
+    }
     
     /**
      * Resets the level manager to level 1.
@@ -85,4 +94,3 @@ public final class LevelManager {
         currentLevel.setValue(1);
     }
 }
-

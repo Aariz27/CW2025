@@ -3,12 +3,15 @@ package com.comp2042.game.controller;
 import com.comp2042.game.events.InputEventListener;
 import com.comp2042.game.events.MoveEvent;
 import com.comp2042.game.data.DownData;
+import com.comp2042.game.data.UndoData;
 import com.comp2042.game.data.ViewData;
 import com.comp2042.game.board.Board;
 import com.comp2042.game.board.SimpleBoard;
 import com.comp2042.game.controller.commands.*;
 import com.comp2042.game.level.LevelManager;
 import com.comp2042.ui.GuiController;
+import com.comp2042.game.data.BoardStateSnapshot;
+import com.comp2042.game.events.EventSource;
 
 /**
  * Coordinates game logic and user input.
@@ -21,6 +24,9 @@ import com.comp2042.ui.GuiController;
 public class GameController implements InputEventListener {
     private final GuiController viewGuiController;
     private final Board board; // Depends on interface, not concrete class
+    private BoardStateSnapshot lastMoveSnapshot;
+    private int timeSlowUses = 0;
+    private int undoUses = 0;
     
     /**
      * Creates a new GameController with dependency injection.
@@ -55,6 +61,7 @@ public class GameController implements InputEventListener {
      */
     @Override
     public DownData onDownEvent(MoveEvent event) {
+        captureSnapshotIfUser(event);
         MoveCommand command = new DownMoveCommand(board, viewGuiController, event.getEventSource());
         command.execute();
         return ((DownMoveCommand) command).getDownData();
@@ -70,6 +77,7 @@ public class GameController implements InputEventListener {
      */
     @Override
     public ViewData onLeftEvent(MoveEvent event) {
+        captureSnapshotIfUser(event);
         MoveCommand command = new LeftMoveCommand(board);
         return command.execute();
     }
@@ -82,6 +90,7 @@ public class GameController implements InputEventListener {
      */
     @Override
     public ViewData onRightEvent(MoveEvent event) {
+        captureSnapshotIfUser(event);
         MoveCommand command = new RightMoveCommand(board);
         return command.execute();
     }
@@ -94,6 +103,7 @@ public class GameController implements InputEventListener {
      */
     @Override
     public ViewData onRotateEvent(MoveEvent event) {
+        captureSnapshotIfUser(event);
         MoveCommand command = new RotateMoveCommand(board);
         return command.execute();
     }
@@ -102,17 +112,18 @@ public class GameController implements InputEventListener {
      * Handles hard drop event using Command pattern.
      * Instantly drops the piece to the ghost position (where it will land).
      * Awards 2 points per cell dropped and handles landing logic.
-     *
+     * 
      * @param event the move event
      * @return DownData containing clear row information and view data
      */
     @Override
     public DownData onHardDropEvent(MoveEvent event) {
+        captureSnapshotIfUser(event);
         MoveCommand command = new HardDropMoveCommand(board, viewGuiController);
         command.execute();
         return ((HardDropMoveCommand) command).getDownData();
     }
-
+    
     /**
      * Handles hold event for swapping the current brick with the held brick.
      * If no brick is held, stores the current brick and spawns a new one.
@@ -123,6 +134,7 @@ public class GameController implements InputEventListener {
      */
     @Override
     public ViewData onHoldEvent(MoveEvent event) {
+        captureSnapshotIfUser(event);
         if (board instanceof SimpleBoard simpleBoard) {
             return simpleBoard.holdBrick();
         }
@@ -136,6 +148,83 @@ public class GameController implements InputEventListener {
     @Override
     public void createNewGame() {
         board.newGame();
+        lastMoveSnapshot = null;
+        timeSlowUses = 0;
+        undoUses = 0;
         viewGuiController.refreshGameBackground(board.getBoardMatrix());
+    }
+
+    /**
+     * Checks if the time slow ability can currently be used.
+     *
+     * @return true if available, otherwise false
+     */
+    public boolean canUseTimeSlowAbility() {
+        return (getTotalLinesCleared() / 3) > timeSlowUses;
+    }
+
+    /**
+     * Marks a time slow charge as used if one is available.
+     *
+     * @return true if a charge was consumed
+     */
+    public boolean consumeTimeSlowCharge() {
+        if (canUseTimeSlowAbility()) {
+            timeSlowUses++;
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Checks if undo can be performed right now.
+     *
+     * @return true if undo is available
+     */
+    public boolean canUseUndoAbility() {
+        return (getTotalLinesCleared() / 5) > undoUses && lastMoveSnapshot != null;
+    }
+
+    /**
+     * Performs an undo, restoring the previous board snapshot when possible.
+     *
+     * @return UndoData describing the result
+     */
+    public UndoData undoLastMove() {
+        if (!(board instanceof SimpleBoard simpleBoard)) {
+            return new UndoData(false, board.getViewData(), board.getBoardMatrix());
+        }
+        if (!canUseUndoAbility()) {
+            return new UndoData(false, board.getViewData(), board.getBoardMatrix());
+        }
+
+        undoUses++;
+        ViewData viewData = simpleBoard.restoreSnapshot(lastMoveSnapshot);
+        lastMoveSnapshot = null;
+        return new UndoData(true, viewData, board.getBoardMatrix());
+    }
+
+    /**
+     * Captures a snapshot of the board state before a user-initiated move.
+     * Used to enable undo functionality.
+     *
+     * @param event the move event that may trigger a snapshot
+     */
+    private void captureSnapshotIfUser(MoveEvent event) {
+        if (event.getEventSource() == EventSource.USER && board instanceof SimpleBoard simpleBoard) {
+            lastMoveSnapshot = simpleBoard.createSnapshot();
+        }
+    }
+
+    /**
+     * Gets the total number of cleared lines from the board, if available.
+     *
+     * @return total cleared lines or 0 when unavailable
+     */
+    private int getTotalLinesCleared() {
+        if (board instanceof SimpleBoard simpleBoard) {
+            return simpleBoard.getLinesTracker().getTotalLines();
+        }
+        return 0;
     }
 }

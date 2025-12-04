@@ -3,11 +3,13 @@ package com.comp2042.game.board;
 import com.comp2042.game.bricks.Brick;
 import com.comp2042.game.bricks.BrickGenerator;
 import com.comp2042.game.bricks.BrickGeneratorFactory;
+import com.comp2042.game.bricks.RandomBrickGenerator;
 import com.comp2042.game.operations.BrickRotator;
 import com.comp2042.game.operations.MatrixOperations;
 import com.comp2042.game.data.ViewData;
 import com.comp2042.game.data.ClearRow;
 import com.comp2042.game.data.NextShapeInfo;
+import com.comp2042.game.data.BoardStateSnapshot;
 import com.comp2042.game.score.Score;
 import com.comp2042.game.score.HighScoreManager;
 import com.comp2042.game.level.LinesClearedTracker;
@@ -133,9 +135,9 @@ public class SimpleBoard implements Board {
         int ghostY = findDropY(currentX, currentY);
         int[][] holdBrickData = heldBrick != null ? heldBrick.getShapeMatrix().get(0) : null;
         return new ViewData(
-            brickRotator.getCurrentShape(),
-            currentX,
-            currentY,
+            brickRotator.getCurrentShape(), 
+            currentX, 
+            currentY, 
             brickGenerator.getNextBrick().getShapeMatrix().get(0),
             holdBrickData,
             currentX,  // ghostX matches current X
@@ -237,6 +239,52 @@ public class SimpleBoard implements Board {
             currentOffset = new Point(4, 0); // Reset position to spawn point
         }
 
+        return getViewData();
+    }
+
+    /**
+     * Captures a snapshot of the current board state for undo functionality.
+     *
+     * @return immutable snapshot of the current state
+     */
+    public BoardStateSnapshot createSnapshot() {
+        var queueSnapshot = brickGenerator instanceof RandomBrickGenerator generator
+            ? generator.copyQueue()
+            : null;
+
+        return new BoardStateSnapshot(
+            currentGameMatrix,
+            currentOffset,
+            brickRotator.getBrick(),
+            brickRotator.getCurrentShapeIndex(),
+            heldBrick,
+            queueSnapshot,
+            score.get(),
+            linesTracker.getTotalLines(),
+            levelManager.getCurrentLevel()
+        );
+    }
+
+    /**
+     * Restores the board to a previous snapshot.
+     *
+     * @param snapshot the snapshot to restore
+     * @return updated ViewData after restoration
+     */
+    public ViewData restoreSnapshot(BoardStateSnapshot snapshot) {
+        currentGameMatrix = MatrixOperations.copy(snapshot.getBoardMatrix());
+        currentOffset = snapshot.getOffset();
+        brickRotator.setBrick(snapshot.getCurrentBrick());
+        brickRotator.setCurrentShape(snapshot.getRotationIndex());
+        heldBrick = snapshot.getHeldBrick();
+
+        if (brickGenerator instanceof RandomBrickGenerator generator && snapshot.getQueueSnapshot() != null) {
+            generator.restoreQueue(snapshot.getQueueSnapshot());
+        }
+
+        score.set(snapshot.getScore());
+        linesTracker.setTotalLines(snapshot.getTotalLines());
+        levelManager.setLevel(snapshot.getLevel());
         return getViewData();
     }
 }

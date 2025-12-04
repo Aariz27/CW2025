@@ -38,7 +38,7 @@ public class Main extends Application {
     /**
      * Initializes and starts the Tetris game application.
      * Shows main menu first, then allows navigation to game or controls.
-     *
+     * 
      * @param primaryStage the primary stage for this application
      * @throws Exception if FXML loading fails or resources are missing
      */

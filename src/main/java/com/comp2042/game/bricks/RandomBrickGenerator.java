@@ -59,4 +59,23 @@ public class RandomBrickGenerator implements BrickGenerator {
     public Brick getNextBrick() {
         return nextBricks.peek();
     }
+
+    /**
+     * Creates a defensive copy of the current upcoming brick queue.
+     *
+     * @return a copy of the queue
+     */
+    public Deque<Brick> copyQueue() {
+        return new ArrayDeque<>(nextBricks);
+    }
+
+    /**
+     * Restores the upcoming brick queue from the provided snapshot.
+     *
+     * @param snapshot the queue snapshot to restore
+     */
+    public void restoreQueue(Deque<Brick> snapshot) {
+        nextBricks.clear();
+        nextBricks.addAll(snapshot);
+    }
 }

@@ -21,7 +21,7 @@ public final class ViewData {
 
     /**
      * Creates new view data with all rendering information.
-     *
+     * 
      * @param brickData 2D array representing the current brick's shape
      * @param xPosition x-coordinate of the brick on the board
      * @param yPosition y-coordinate of the brick on the board
@@ -69,7 +69,7 @@ public final class ViewData {
 
     /**
      * Returns a defensive copy of the next brick's shape matrix.
-     *
+     * 
      * @return 2D array representing the next brick shape
      */
     public int[][] getNextBrickData() {
