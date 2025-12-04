@@ -277,7 +277,37 @@ All dependencies are managed via Maven and automatically downloaded:
 
 ---
 
-### 8. Comprehensive JUnit Test Suite
+### 8. Visual Feedback Effects
+**Description**: Dynamic visual effects that provide immediate feedback when lines are cleared, enhancing the game's visual polish without affecting gameplay mechanics.
+
+**Features**:
+
+#### Row Clear Shockwave
+- Whenever lines are cleared (via normal fall or hard drop), the board border briefly flashes with a bright shockwave effect
+- Implementation: `GuiController` adds a `shockwave` CSS class to the game board and removes it after approximately 225ms
+- CSS applies a strong white drop shadow around the board border for the flash effect
+
+#### Brick Border Bounce
+- On every row clear, all visible bricks (board tiles and active piece) get a subtle colored border pulse animation
+- Each brick's stroke animates from 0px → 2px → 0px in its own fill color over approximately 280ms
+- Creates a quick "bounce" effect around each brick using JavaFX Timeline
+- Provides satisfying visual feedback tied to the brick's actual color
+
+**Gameplay Impact**:
+- Purely visual feedback effects
+- No changes to gameplay rules, scoring, or controls
+- Triggered automatically on line clears from both normal drops and hard drops
+
+**Implementation**:
+- `triggerShockwaveEffect()` method toggles style class on game board
+- `triggerBrickBounceEffect()` and `applyBounceToMatrix()` methods apply per-brick stroke animations
+- Integrated into `moveDown()` and `handleHardDrop()` to detect line clears from `DownData`
+
+**Design**: Provides immediate, satisfying visual feedback for successful line clears without cluttering the screen or distracting from gameplay.
+
+---
+
+### 9. Comprehensive JUnit Test Suite
 **Description**: Growing test suite with 200+ test methods across 35+ test files covering all major components. Additional tests continue to be added as new features are implemented and refactored.
 
 **Test Coverage**:
@@ -301,7 +331,7 @@ All dependencies are managed via Maven and automatically downloaded:
 
 ---
 
-### 9. SOLID Principles Applied Throughout
+### 10. SOLID Principles Applied Throughout
 
 - **Single Responsibility Principle**: Each class has one reason to change (e.g., `InputHandler`, `GameTimer`, `GameViewModel`)
 - **Open/Closed Principle**: Open for extension via strategies/commands, closed for modification
@@ -311,7 +341,7 @@ All dependencies are managed via Maven and automatically downloaded:
 
 ---
 
-### 10. Complete Game Controls
+### 11. Complete Game Controls
 
 | Key | Action | Description |
 |-----|--------|-------------|
@@ -646,7 +676,10 @@ The following features were considered but not implemented due to time constrain
      - Increased brick size from 20 to 24 pixels for better visibility
      - Added game over overlay field for screen dimming effect
      - Adjusted ghost panel Y offset to accommodate larger bricks
-   - **Reason**: Enforce Single Responsibility Principle, improve testability, support new features, and enhance visual presentation
+     - **Visual Feedback Effects**: Added `triggerShockwaveEffect()` for board border flash on line clears
+     - Added `triggerBrickBounceEffect()` and `applyBounceToMatrix()` for per-brick stroke animations
+     - Updated `moveDown()` and `handleHardDrop()` to trigger visual effects when lines are cleared
+   - **Reason**: Enforce Single Responsibility Principle, improve testability, support new features, enhance visual presentation, and provide satisfying visual feedback
    
 2. **`com.comp2042.game.board.SimpleBoard`**
    - **Changes**:
@@ -690,11 +723,13 @@ The following features were considered but not implemented due to time constrain
      - Added `<Label fx:id="levelLabel">` for level display
      - Added `<Label fx:id="highScoreLabel">` for high score display
      - Added `<Rectangle fx:id="gameOverOverlay">` covering full window for dimming effect
+     - Ensured `BorderPane` has `fx:id="gameBoard"` for visual effect style class toggling (shockwave)
+     - Removed previous `energyLabel` - HUD now shows only Score, Level, and High Score
      - Moved `GameOverPanel` from Group to root Pane for proper z-ordering
      - Scaled all UI positions by 20% to accommodate larger game elements
      - Adjusted game panel position, notification group, and score label positions
      - Added Rectangle import for overlay support
-   - **Reason**: Support ghost piece visualization, level display, high score display, and improve game over screen visibility
+   - **Reason**: Support ghost piece visualization, level display, high score display, visual feedback effects, and improve game over screen visibility
    
 7. **`src/main/resources/window_style.css`**
    - **Changes**:
@@ -703,7 +738,9 @@ The following features were considered but not implemented due to time constrain
      - Enhanced visual styling for pause and game over panels
      - Updated `.gameOverStyle` with white text color, semi-transparent red background, and better sizing
      - Added `.game-over-overlay` style with semi-transparent gray dimming effect
-   - **Reason**: Improve UI polish, user experience, and game over screen visibility
+     - Added `.shockwave` style for board border flash effect on line clears (bright white drop shadow)
+     - Removed previous `.gameBoard.energy-low/mid/high` energy tier styles (no longer used)
+   - **Reason**: Improve UI polish, user experience, game over screen visibility, and provide visual feedback for line clears
    
 8. **`pom.xml`**
    - **Changes**:
@@ -737,7 +774,7 @@ The following features were considered but not implemented due to time constrain
     - **Changes**: Enhanced documentation, maintained existing logic
     - **Reason**: Code clarity
 
-**Summary**: 12 files significantly modified, with changes driven by refactoring goals (SRP, DIP, ISP), new feature requirements (ghost piece, level system, hard drop, high score), and UI polish improvements.
+**Summary**: 12 files significantly modified, with changes driven by refactoring goals (SRP, DIP, ISP), new feature requirements (ghost piece, level system, hard drop, high score, visual feedback effects), and UI polish improvements.
 
 ---
 
@@ -965,12 +1002,13 @@ All of these problems were eventually resolved without compromising the code qua
 - Level system (10 levels, adaptive difficulty)
 - Ghost piece (semi-transparent preview, real-time updates)
 - High score tracking (persistent storage)
+- Visual feedback effects (shockwave flash and brick bounce on line clears)
 - Comprehensive test suite (200+ tests across 35+ files)
 
 ---
 
 ## Conclusion
 
-This project demonstrates application of SOLID principles and design patterns to transform a legacy codebase. The refactoring work has focused on improving code organization, maintainability, and extensibility while adding meaningful gameplay enhancements like the level system, ghost piece preview, hard drop functionality, and high score tracking.
+This project demonstrates application of SOLID principles and design patterns to transform a legacy codebase. The refactoring work has focused on improving code organization, maintainability, and extensibility while adding meaningful gameplay enhancements like the level system, ghost piece preview, hard drop functionality, high score tracking, and visual feedback effects.
 
 All implemented features so far are fully functional and tested. The codebase is well-organized and structured for maintainability. Several unexpected technical challenges have been encountered and resolved during development, particularly around UI responsiveness, test framework compatibility, and JavaFX threading requirements.

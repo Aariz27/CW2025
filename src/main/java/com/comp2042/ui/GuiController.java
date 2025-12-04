@@ -8,10 +8,12 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.Group;
 import javafx.scene.effect.Reflection;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.GridPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
+import javafx.collections.ObservableList;
 
 import java.net.URL;
 import java.util.ResourceBundle;
@@ -56,6 +58,10 @@ public class GuiController implements Initializable {
     /** Main game board grid panel */
     @FXML
     private GridPane gamePanel;
+
+    /** Container border for the main game board */
+    @FXML
+    private BorderPane gameBoard;
 
     /** Container for notification panels (score bonuses, level ups) */
     @FXML
@@ -279,7 +285,9 @@ public class GuiController implements Initializable {
     private void moveDown(MoveEvent event) {
         if (isPause.getValue() == Boolean.FALSE) {
             DownData downData = eventListener.onDownEvent(event);
+            int linesCleared = 0;
             if (downData.getClearRow() != null && downData.getClearRow().getLinesRemoved() > 0) {
+                linesCleared = downData.getClearRow().getLinesRemoved();
                 // Calculate final score with level multiplier for display
                 int baseScore = downData.getClearRow().getScoreBonus();
                 int finalScore = baseScore;
@@ -290,6 +298,11 @@ public class GuiController implements Initializable {
                 NotificationPanel notificationPanel = new NotificationPanel("+" + finalScore);
                 groupNotification.getChildren().add(notificationPanel);
                 notificationPanel.showScore(groupNotification.getChildren());
+            }
+            // Trigger a brief shockwave and brick bounce visual when lines are cleared
+            if (linesCleared > 0) {
+                triggerShockwaveEffect();
+                triggerBrickBounceEffect();
             }
             refreshBrick(downData.getViewData());
         }
@@ -303,7 +316,9 @@ public class GuiController implements Initializable {
     private void handleHardDrop() {
         if (isPause.getValue() == Boolean.FALSE) {
             DownData downData = eventListener.onHardDropEvent(new MoveEvent(EventType.HARD_DROP, EventSource.USER));
+            int linesCleared = 0;
             if (downData.getClearRow() != null && downData.getClearRow().getLinesRemoved() > 0) {
+                linesCleared = downData.getClearRow().getLinesRemoved();
                 // Calculate final score with level multiplier for display
                 int baseScore = downData.getClearRow().getScoreBonus();
                 int finalScore = baseScore;
@@ -314,6 +329,11 @@ public class GuiController implements Initializable {
                 NotificationPanel notificationPanel = new NotificationPanel("+" + finalScore);
                 groupNotification.getChildren().add(notificationPanel);
                 notificationPanel.showScore(groupNotification.getChildren());
+            }
+            // Hard drops also trigger the shockwave and brick bounce effects
+            if (linesCleared > 0) {
+                triggerShockwaveEffect();
+                triggerBrickBounceEffect();
             }
             refreshBrick(downData.getViewData());
         }
@@ -406,7 +426,7 @@ public class GuiController implements Initializable {
         NotificationPanel notificationPanel = new NotificationPanel("LEVEL " + newLevel + "!");
         groupNotification.getChildren().add(notificationPanel);
         notificationPanel.showScore(groupNotification.getChildren());
-        
+
         // Update timer speed for new level
         startTimerWithCurrentLevelSpeed();
     }
@@ -437,6 +457,7 @@ public class GuiController implements Initializable {
         gameOverPanel.setVisible(true);
         isGameOver.setValue(Boolean.TRUE);
         isPause.setValue(Boolean.FALSE); // Ensure not in pause state
+
     }
 
     /**
@@ -461,6 +482,7 @@ public class GuiController implements Initializable {
         startTimerWithCurrentLevelSpeed();
         isPause.setValue(Boolean.FALSE);
         isGameOver.setValue(Boolean.FALSE);
+
     }
 
     /**
@@ -547,5 +569,122 @@ public class GuiController implements Initializable {
             }
         }
         return grid;
+    }
+
+    // -------------------------
+    // Energy Pulse UI helpers
+    // -------------------------
+
+    /**
+     * Legacy no-op: energy pulse system removed.
+     * Kept only to avoid breaking existing call sites.
+     */
+    private void handleEnergyTick(int linesCleared) {
+        // intentionally empty
+    }
+
+    /**
+     * Legacy no-op: energy pulse system removed.
+     */
+    private void boostEnergyOnLevelUp() {
+        // intentionally empty
+    }
+
+    /**
+     * Legacy no-op: energy pulse system removed.
+     */
+    private void resetEnergy() {
+        // intentionally empty
+    }
+
+    /**
+     * Legacy no-op: energy pulse system removed.
+     */
+    private void clampEnergy() {
+        // intentionally empty
+    }
+
+    /**
+     * Legacy no-op: energy pulse system removed.
+     */
+    private void updateEnergyUi() {
+        // intentionally empty
+    }
+
+    /**
+     * Applies a short-lived shockwave CSS effect to the game board whenever
+     * one or more lines are cleared. Uses a background thread to remove the
+     * style after a brief delay without blocking the JavaFX Application Thread.
+     */
+    private void triggerShockwaveEffect() {
+        if (gameBoard == null) {
+            return;
+        }
+
+        ObservableList<String> styleClasses = gameBoard.getStyleClass();
+        if (!styleClasses.contains("shockwave")) {
+            styleClasses.add("shockwave");
+
+            // Remove the shockwave class after a short delay so the effect feels like a pulse
+            new Thread(() -> {
+                try {
+                    Thread.sleep(225);
+                } catch (InterruptedException ignored) {
+                    // Ignore interruption and attempt to clean up the style class
+                }
+                javafx.application.Platform.runLater(() ->
+                        gameBoard.getStyleClass().remove("shockwave")
+                );
+            }).start();
+        }
+    }
+
+    /**
+     * Applies a coloured stroke bounce to all brick rectangles on the board for a short time
+     * whenever one or more lines are cleared. Each brick's border "bounces" using its own fill colour
+     * with a fade-in / fade-out animation.
+     */
+    private void triggerBrickBounceEffect() {
+        if (displayMatrix == null && rectangles == null) {
+            return;
+        }
+
+        applyBounceToMatrix(displayMatrix);
+        applyBounceToMatrix(rectangles);
+    }
+
+    private void applyBounceToMatrix(Rectangle[][] matrix) {
+        if (matrix == null) {
+            return;
+        }
+        for (Rectangle[] row : matrix) {
+            for (Rectangle rect : row) {
+                if (rect == null) {
+                    continue;
+                }
+                if (rect.getFill() instanceof Color color && color.getOpacity() > 0.0) {
+                    // Start with no stroke and animate stroke width to create a subtle outline pulse
+                    rect.setStroke(color);
+                    rect.setStrokeWidth(0.0);
+
+                    javafx.animation.Timeline timeline = new javafx.animation.Timeline(
+                        new javafx.animation.KeyFrame(javafx.util.Duration.ZERO,
+                            new javafx.animation.KeyValue(rect.strokeWidthProperty(), 0.0)
+                        ),
+                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(140),
+                            new javafx.animation.KeyValue(rect.strokeWidthProperty(), 2.0)
+                        ),
+                        new javafx.animation.KeyFrame(javafx.util.Duration.millis(280),
+                            new javafx.animation.KeyValue(rect.strokeWidthProperty(), 0.0)
+                        )
+                    );
+                    timeline.setOnFinished(e -> {
+                        rect.setStroke(null);
+                        rect.setStrokeWidth(0.0);
+                    });
+                    timeline.play();
+                }
+            }
+        }
     }
 }

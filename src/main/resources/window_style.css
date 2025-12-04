@@ -58,6 +58,16 @@
     -fx-font-weight: bold;
 }
 
+/* Shockwave effect applied to the game board when lines are cleared */
+.shockwave {
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.95), 42, 0.75, 0, 0);
+}
+
+/* Bright glow applied to individual bricks when rows are cleared */
+.brick-glow {
+    -fx-effect: dropshadow(gaussian, rgba(255, 255, 255, 0.95), 20, 0.9, 0, 0);
+}
+
 .gameOverStyle {
     -fx-font-family: "Let's go Digital";
     -fx-font-size: 28;
