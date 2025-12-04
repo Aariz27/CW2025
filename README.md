@@ -278,7 +278,7 @@ All dependencies are managed via Maven and automatically downloaded:
 ---
 
 ### 8. Comprehensive JUnit Test Suite
-**Description**: 189+ test methods across 31 test files covering all major components.
+**Description**: Growing test suite with 200+ test methods across 35+ test files covering all major components. Additional tests continue to be added as new features are implemented and refactored.
 
 **Test Coverage**:
 - **Brick Tests**: All 7 brick types (I, J, L, O, S, T, Z) with shape and color verification
@@ -288,11 +288,16 @@ All dependencies are managed via Maven and automatically downloaded:
 - **Level System Tests**: Level progression, score multipliers, lines tracking
 - **Data Tests**: All DTOs (ViewData, DownData, ClearRow, NextShapeInfo)
 - **Event Tests**: Event creation, types, and event source
-- **Score Tests**: Score increment, property binding, reset
+- **Score Tests**: Score increment, property binding, reset, high score tracking
+- **High Score Manager Tests**: Score persistence, new high score detection, file I/O
+- **Color System Tests**: ColorMapper (color codes 0-7, ghost colors, unknown codes), ColorStrategyRegistry (strategy lookup, fallback behavior), all ColorStrategy implementations
+- **UI Component Tests**: Most UI components tested (PausePanel intentionally skipped due to JavaFX toolkit initialization requirements)
 
 **Frameworks**: JUnit 5 (Jupiter), Mockito for mocking
 
 **Run Command**: `./mvnw test`
+
+**Note on Test Execution**: Some tests may encounter errors when running on Java 25. The project is configured for Java 23 (see `pom.xml`), but the runtime JVM that actually executes Maven and the tests is Java 25 (installed on the system). This can cause compatibility issues with Mockito's ByteBuddy dependency, which hasn't been fully updated for Java 25 yet. The ByteBuddy experimental flag in the Maven Surefire configuration helps mitigate most issues, but occasional test failures may occur due to this version mismatch.
 
 ---
 
@@ -326,7 +331,7 @@ All dependencies are managed via Maven and automatically downloaded:
 
 All features have been thoroughly tested with:
 - Manual gameplay testing
-- JUnit test suite (189+ tests)
+- JUnit test suite (200+ tests across 35+ files)
 - Edge case verification
 - Input validation
 
@@ -604,9 +609,9 @@ The following features were considered but not implemented due to time constrain
     - Provides current level configuration
 
 ### Test Classes
-61-91. **JUnit Test Suite** (`src/test/java/com/comp2042/`)
+61-95. **JUnit Test Suite** (`src/test/java/com/comp2042/`)
     - `MatrixOperationsTest`, `BrickRotatorTest`
-    - `ScoreTest`, `HighScoreManagerTest` (if added)
+    - `ScoreTest`, `HighScoreManagerTest`
     - All 7 brick tests (IBrickTest, JBrickTest, etc.)
     - `RandomBrickGeneratorTest`, `BrickGeneratorFactoryTest`
     - `SimpleBoardTest`, `GhostBlockTest`
@@ -615,8 +620,11 @@ The following features were considered but not implemented due to time constrain
     - All 4 data tests (ViewDataTest, DownDataTest, ClearRowTest, NextShapeInfoTest)
     - All 3 event tests (MoveEventTest, EventTypeTest, EventSourceTest)
     - All 4 level tests (LevelTest, LevelManagerTest, DefaultLevelStrategyTest, LinesClearedTrackerTest)
+    - `ColorMapperTest` - Tests for color code mapping and ghost colors
+    - `ColorStrategyRegistryTest` - Tests for strategy lookup and fallback behavior
+    - All ColorStrategy implementation tests (9 strategy classes tested)
 
-**Total New Classes**: Over 90 Java files including source files and test files
+**Total New Classes**: Over 95 Java files including source files and test files
 
 ---
 
@@ -934,8 +942,8 @@ All of these problems were eventually resolved without compromising the code qua
 ## Project Statistics
 
 ### Code Metrics
-- **Total Java Files**: Over 90 files including source and test files
-- **Test Methods**: Comprehensive test suite with over 180 test methods
+- **Total Java Files**: Over 95 files including source and test files
+- **Test Methods**: Comprehensive and growing test suite with 200+ test methods across 35+ test files
 - **Design Patterns Used**: 5 major patterns (Strategy, Factory, Command, Observer, Registry)
 - **SOLID Principles Applied**: All 5 principles throughout codebase
 
@@ -957,7 +965,7 @@ All of these problems were eventually resolved without compromising the code qua
 - Level system (10 levels, adaptive difficulty)
 - Ghost piece (semi-transparent preview, real-time updates)
 - High score tracking (persistent storage)
-- Comprehensive tests covering all components
+- Comprehensive test suite (200+ tests across 35+ files)
 
 ---
 

@@ -31,9 +31,15 @@ class EventTypeTest {
     }
 
     @Test
-    void eventTypeHasFourValues() {
+    void eventTypeHasHardDropValue() {
+        assertNotNull(EventType.HARD_DROP);
+        assertEquals("HARD_DROP", EventType.HARD_DROP.name());
+    }
+
+    @Test
+    void eventTypeHasFiveValues() {
         EventType[] values = EventType.values();
-        assertEquals(4, values.length);
+        assertEquals(5, values.length);
     }
 }
 

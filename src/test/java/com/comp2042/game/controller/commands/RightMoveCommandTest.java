@@ -41,9 +41,9 @@ class RightMoveCommandTest {
 
     @Test
     void executeDoesNotMoveWhenBlocked() {
-        // Move to right boundary
-        for (int i = 0; i < 10; i++) {
-            board.moveBrickRight();
+        // Move to right boundary - keep moving until we can't anymore
+        while (board.moveBrickRight()) {
+            // Keep moving right
         }
         
         ViewData before = board.getViewData();
