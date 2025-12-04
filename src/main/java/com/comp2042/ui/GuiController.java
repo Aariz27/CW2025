@@ -121,6 +121,14 @@ public class GuiController implements Initializable {
     /** Label displaying the high score */
     @FXML
     private Label highScoreLabel;
+    
+    /** Label showing slow time availability */
+    @FXML
+    private Label timeSlowStatusLabel;
+
+    /** Label showing undo availability */
+    @FXML
+    private Label undoStatusLabel;
 
     /** 2D array of rectangles representing the game board cells */
     private Rectangle[][] displayMatrix;
@@ -292,6 +300,7 @@ public class GuiController implements Initializable {
 
         // Start timer with level 1 speed (400ms)
         startTimerWithCurrentLevelSpeed();
+        refreshAbilityIndicators();
     }
     
     /**
@@ -506,6 +515,36 @@ public class GuiController implements Initializable {
     }
 
     /**
+     * Refreshes the UI labels that show ability availability.
+     * This only reflects state by querying the controller; it does not change logic.
+     */
+    private void refreshAbilityIndicators() {
+        if (timeSlowStatusLabel == null || undoStatusLabel == null) {
+            return;
+        }
+
+        timeSlowStatusLabel.getStyleClass().removeAll("ability-ready", "ability-locked");
+        undoStatusLabel.getStyleClass().removeAll("ability-ready", "ability-locked");
+
+        if (gameController == null) {
+            timeSlowStatusLabel.setText("Slow Time (G): unavailable");
+            timeSlowStatusLabel.getStyleClass().add("ability-locked");
+
+            undoStatusLabel.setText("Undo (U): unavailable");
+            undoStatusLabel.getStyleClass().add("ability-locked");
+            return;
+        }
+
+        boolean slowReady = gameController.canUseTimeSlowAbility();
+        timeSlowStatusLabel.setText(slowReady ? "Slow Time READY (G)" : "Slow Time (G): unavailable");
+        timeSlowStatusLabel.getStyleClass().add(slowReady ? "ability-ready" : "ability-locked");
+
+        boolean undoReady = gameController.canUseUndoAbility();
+        undoStatusLabel.setText(undoReady ? "Undo READY (U)" : "Undo (U): unavailable");
+        undoStatusLabel.getStyleClass().add(undoReady ? "ability-ready" : "ability-locked");
+    }
+
+    /**
      * Refreshes the game board background with the current board state.
      * 
      * @param board the 2D array representing the current board state
@@ -549,6 +588,7 @@ public class GuiController implements Initializable {
                 triggerBrickBounceEffect();
             }
             refreshBrick(downData.getViewData());
+            refreshAbilityIndicators();
         }
         gamePanel.requestFocus();
     }
@@ -583,6 +623,7 @@ public class GuiController implements Initializable {
                 triggerBrickBounceEffect();
             }
             refreshBrick(downData.getViewData());
+            refreshAbilityIndicators();
         }
         gamePanel.requestFocus();
     }
@@ -631,8 +672,10 @@ public class GuiController implements Initializable {
         timeSlowTimer.setOnFinished(e -> {
             timeSlowActive = false;
             startTimerWithCurrentLevelSpeed();
+            refreshAbilityIndicators();
         });
         timeSlowTimer.play();
+        refreshAbilityIndicators();
         gamePanel.requestFocus();
     }
 
@@ -658,6 +701,7 @@ public class GuiController implements Initializable {
             groupNotification.getChildren().add(notificationPanel);
             notificationPanel.showScore(groupNotification.getChildren());
         }
+        refreshAbilityIndicators();
         gamePanel.requestFocus();
     }
 
@@ -692,6 +736,7 @@ public class GuiController implements Initializable {
         );
     
         gamePanel.setOnKeyPressed(inputHandler.build());
+        refreshAbilityIndicators();
     }
 
     /**
@@ -791,6 +836,7 @@ public class GuiController implements Initializable {
         gameOverPanel.setVisible(true);
         isGameOver.setValue(Boolean.TRUE);
         isPause.setValue(Boolean.FALSE); // Ensure not in pause state
+        refreshAbilityIndicators();
 
     }
 
@@ -820,6 +866,7 @@ public class GuiController implements Initializable {
         startTimerWithCurrentLevelSpeed();
         isPause.setValue(Boolean.FALSE);
         isGameOver.setValue(Boolean.FALSE);
+        refreshAbilityIndicators();
 
     }
 

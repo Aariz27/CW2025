@@ -43,4 +43,8 @@
         <GridPane fx:id="nextBrickPanel" vgap="1" hgap="1" layoutX="10" layoutY="10"/>
     </Pane>
 
+    <!-- Ability status indicators -->
+    <Label fx:id="timeSlowStatusLabel" layoutX="270" layoutY="430" styleClass="ability-label ability-locked" text="Slow Time (G): unavailable"/>
+    <Label fx:id="undoStatusLabel" layoutX="270" layoutY="460" styleClass="ability-label ability-locked" text="Undo (U): unavailable"/>
+
 </Pane>
