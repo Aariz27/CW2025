@@ -9,12 +9,13 @@ import com.comp2042.game.data.ViewData;
 import com.comp2042.game.data.ClearRow;
 import com.comp2042.game.data.NextShapeInfo;
 import com.comp2042.game.score.Score;
+import com.comp2042.game.score.HighScoreManager;
 import com.comp2042.game.level.LinesClearedTracker;
 import com.comp2042.game.level.LevelManager;
 import com.comp2042.game.level.LevelStrategy;
 import com.comp2042.game.level.DefaultLevelStrategy;
 
-import java.awt.Point;
+import java.awt.*;
 
 /**
  * Concrete board implementation.
@@ -22,9 +23,6 @@ import java.awt.Point;
  * to allow different board implementations through polymorphism.
  */
 public class SimpleBoard implements Board {
-
-    private static final int SPAWN_X = 4;
-    private static final int SPAWN_Y = 0;
 
     private final int width;
     private final int height;
@@ -35,6 +33,7 @@ public class SimpleBoard implements Board {
     private final Score score;
     private final LinesClearedTracker linesTracker;
     private final LevelManager levelManager;
+    private final HighScoreManager highScoreManager;
 
     /**
      * Creates a new SimpleBoard with the specified dimensions.
@@ -54,6 +53,7 @@ public class SimpleBoard implements Board {
         linesTracker = new LinesClearedTracker();
         LevelStrategy levelStrategy = new DefaultLevelStrategy();
         levelManager = new LevelManager(linesTracker, levelStrategy);
+        highScoreManager = new HighScoreManager(score);
     }
 
     @Override
@@ -116,7 +116,7 @@ public class SimpleBoard implements Board {
     public boolean trySpawnNewBrick() {
         Brick currentBrick = brickGenerator.getBrick();
         brickRotator.setBrick(currentBrick);
-        currentOffset = new Point(SPAWN_X, SPAWN_Y);
+        currentOffset = new Point(4, 0); // Spawn at top (Y=0), center horizontally (X=4)
         return MatrixOperations.intersect(currentGameMatrix, brickRotator.getCurrentShape(), (int) currentOffset.getX(), (int) currentOffset.getY());
     }
 
@@ -195,6 +195,15 @@ public class SimpleBoard implements Board {
     public LevelManager getLevelManager() {
         return levelManager;
     }
+    
+    /**
+     * Gets the high score manager.
+     * 
+     * @return the HighScoreManager
+     */
+    public HighScoreManager getHighScoreManager() {
+        return highScoreManager;
+    }
 
 
     @Override
@@ -203,6 +212,7 @@ public class SimpleBoard implements Board {
         score.reset();
         linesTracker.reset();
         levelManager.reset();
+        highScoreManager.resetNewHighScoreFlag();
         trySpawnNewBrick();
     }
 }
