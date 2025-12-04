@@ -1,6 +1,8 @@
 package com.comp2042.ui;
 
 import com.comp2042.ui.color.ColorStrategyRegistry;
+import com.comp2042.ui.theme.Theme;
+import com.comp2042.ui.theme.ThemeManager;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.Paint;
 
@@ -16,12 +18,17 @@ public final class ColorMapper {
     
     /**
      * Gets the Paint color for the given color code.
-     * Delegates to registry which uses polymorphism to select the correct strategy.
+     * Delegates to the active Theme via ThemeManager.
      * 
-     * @param code the color code (0-7 for specific colors, any other value returns white)
+     * @param code the color code (0-7 for specific colors, any other value returns transparent)
      * @return the Paint color corresponding to the code
      */
     public static Paint getFillColor(int code) {
+        Theme theme = ThemeManager.getInstance().getCurrentTheme();
+        if (theme != null) {
+            return theme.getBrickColor(code);
+        }
+        // Fallback to legacy registry if no theme active (should not happen)
         return ColorStrategyRegistry.getColor(code);
     }
     
@@ -33,7 +40,7 @@ public final class ColorMapper {
      * @return a semi-transparent Paint color for ghost piece rendering
      */
     public static Paint getGhostFillColor(int code) {
-        Paint solidColor = ColorStrategyRegistry.getColor(code);
+        Paint solidColor = getFillColor(code);
         
         // Convert to semi-transparent Color
         if (solidColor instanceof Color) {

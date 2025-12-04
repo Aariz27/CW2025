@@ -113,26 +113,39 @@ All dependencies are managed via Maven and automatically downloaded:
 - Allows different level progression schemes to be swapped
 - **Benefit**: Makes it easy to experiment with different difficulty progression schemes
 
-#### 3.2 Factory Pattern
+**Theme Strategy** (`com.comp2042.ui.theme`):
+- `Theme` interface with multiple concrete implementations: `ClassicTheme`, `RetroTheme`, `NeonTheme`
+- Each theme provides its own stylesheet, color palette, and name
+- Themes can be swapped at runtime without affecting game logic
+- **Benefit**: Allows complete visual redesigns without changing game code, demonstrates Open/Closed Principle
+
+#### 3.2 Singleton Pattern
+**ThemeManager** (`com.comp2042.ui.theme`):
+- Manages globally accessible current theme state
+- Single instance ensures consistent theme across entire application
+- Provides centralized point for theme switching
+- **Benefit**: Guarantees single source of truth for current theme, easy global access without passing references
+
+#### 3.3 Factory Pattern
 **BrickGeneratorFactory** (`com.comp2042.game.bricks`):
 - Decouples `SimpleBoard` from concrete `RandomBrickGenerator`
 - Factory creates generators via `createDefault()` method
 - **Benefit**: Makes it easy to swap in different brick generators for testing or implementing different randomization systems
 
-#### 3.3 Command Pattern
+#### 3.4 Command Pattern
 **MoveCommand Interface** (`com.comp2042.game.controller.commands`):
 - Encapsulates move operations as objects
 - Concrete commands: `LeftMoveCommand`, `RightMoveCommand`, `RotateMoveCommand`, `DownMoveCommand`, `HardDropMoveCommand`
 - **Benefit**: Eliminates nested if-else blocks, makes each move type independently testable, and makes it easy to add new types of moves
 
-#### 3.4 Observer Pattern
+#### 3.5 Observer Pattern
 **JavaFX Properties**:
 - `Score.scoreProperty()` bound to UI label
 - `LevelManager.levelProperty()` bound to UI label
 - `LinesClearedTracker.linesProperty()` observed by `LevelManager`
 - **Benefit**: The UI updates automatically without needing to manually call refresh methods
 
-#### 3.5 Registry Pattern
+#### 3.6 Registry Pattern
 **ColorStrategyRegistry**:
 - Centralized management of color strategies
 - HashMap-based lookup for efficient strategy retrieval
@@ -277,7 +290,51 @@ All dependencies are managed via Maven and automatically downloaded:
 
 ---
 
-### 8. Visual Feedback Effects
+### 8. Visual Themes System
+**Description**: A robust theming system using Strategy and Singleton patterns that allows players to switch between distinct visual styles during gameplay without affecting game mechanics or state.
+
+**Features**:
+- **Runtime Theme Switching**: Players can instantly toggle between themes by pressing the **T** key during gameplay
+- **State Preservation**: Game state (board, score, active piece, level) is perfectly preserved during theme switches
+- **Multiple Themes**: Three fully implemented themes with distinct visual styles
+
+**Available Themes**:
+
+#### Classic Theme (Default)
+- Original game visual style
+- Standard color palette with colored bricks
+- Traditional UI styling
+
+#### Retro Theme
+- Monochrome green aesthetic inspired by classic handheld consoles (Gameboy-style)
+- All game elements rendered in various shades of green
+- Nostalgic retro gaming experience
+
+#### Neon Theme
+- High-contrast colors with glow effects for bricks
+- Dark background for dramatic appearance
+- Modern, vibrant aesthetic
+
+**Implementation**:
+- **Strategy Pattern**: `Theme` interface defines contract for visual themes (stylesheets, color palettes, names)
+- **Singleton Pattern**: `ThemeManager` manages active theme and notifies UI of changes
+- **Observer Pattern**: Theme changes trigger automatic UI updates
+- **Dynamic CSS**: Stylesheets swapped at runtime without application restart
+- **Color Delegation**: `ColorMapper` delegates to current theme for brick colors
+
+**Technical Details**:
+- `Theme` interface: Defines `getStylesheet()`, `getColorPalette()`, `getThemeName()`
+- `ThemeManager`: Singleton managing current theme with change notification
+- Concrete implementations: `ClassicTheme`, `RetroTheme`, `NeonTheme`
+- `GuiController.initThemeHandling()`: Listens for theme changes, swaps CSS, triggers repaint
+- `ColorMapper.getFillColor()`: Delegates to active theme instead of static registry
+- `InputHandler`: Captures 'T' key for theme toggle
+
+**Design**: Demonstrates Strategy pattern for visual variation, Singleton for global theme state, and clean separation between game logic and presentation.
+
+---
+
+### 9. Visual Feedback Effects
 **Description**: Dynamic visual effects that provide immediate feedback when lines are cleared, enhancing the game's visual polish without affecting gameplay mechanics.
 
 **Features**:
@@ -307,7 +364,7 @@ All dependencies are managed via Maven and automatically downloaded:
 
 ---
 
-### 9. Comprehensive JUnit Test Suite
+### 10. Comprehensive JUnit Test Suite
 **Description**: Growing test suite with 200+ test methods across 35+ test files covering all major components. Additional tests continue to be added as new features are implemented and refactored.
 
 **Test Coverage**:
@@ -331,7 +388,7 @@ All dependencies are managed via Maven and automatically downloaded:
 
 ---
 
-### 10. SOLID Principles Applied Throughout
+### 11. SOLID Principles Applied Throughout
 
 - **Single Responsibility Principle**: Each class has one reason to change (e.g., `InputHandler`, `GameTimer`, `GameViewModel`)
 - **Open/Closed Principle**: Open for extension via strategies/commands, closed for modification
@@ -341,7 +398,7 @@ All dependencies are managed via Maven and automatically downloaded:
 
 ---
 
-### 11. Complete Game Controls
+### 12. Complete Game Controls
 
 | Key | Action | Description |
 |-----|--------|-------------|
@@ -351,21 +408,26 @@ All dependencies are managed via Maven and automatically downloaded:
 | **DOWN** / **S** | Soft Drop | Move piece down one cell |
 | **SPACE** | Hard Drop | Instantly drop piece to landing position (+2 pts/cell) |
 | **P** | Pause/Resume | Toggle pause state |
+| **T** | Theme Toggle | Switch between visual themes (Classic/Retro/Neon) |
 | **N** | New Game | Start a new game (anytime) |
 
 ---
 
 ## Implemented but Not Working Properly
 
-**None** - All implemented features are fully functional and tested.
+### Neon Theme Background Issue
+**Problem**: While the Neon Theme's high-contrast colors and glow effects for bricks are working correctly, the background is not appearing as "pitch black" as intended.
 
-All features have been thoroughly tested with:
-- Manual gameplay testing
-- JUnit test suite (200+ tests across 35+ files)
-- Edge case verification
-- Input validation
+**Current Behavior**: The background retains the dark gray or original background image despite CSS attempts to override it with `-fx-background-image: none`.
 
-No known bugs or issues at this time.
+**Investigation**: This appears to be related to CSS specificity issues or JavaFX scene property caching. The background color/image property may require a more aggressive reset or direct JavaFX API calls instead of pure CSS.
+
+**Attempted Solutions**:
+- Tried CSS override with `-fx-background-image: none`
+- Attempted various CSS specificity approaches
+- Current workaround: Theme works functionally but aesthetic is not optimal
+
+**Status**: The theme is usable and functional for gameplay, but the visual aesthetic is not meeting design specifications. Further investigation into JavaFX scene graph property manipulation needed.
 
 ---
 
@@ -374,10 +436,10 @@ No known bugs or issues at this time.
 The following features were considered but not implemented due to time constraints and scope prioritization:
 
 ### 1. Next Piece Preview Display
-**Reason**: While the data for the next piece is already available in `ViewData` (via `NextShapeInfo`), implementing the UI visualization requires additional FXML layout work and GridPane management. The underlying logic exists, but the visual component was deprioritized in favor of more impactful features (ghost piece, hard drop).
+**Reason**: This feature was planned to show the upcoming brick to the player using the existing `nextBrickData` in `ViewData`. While the backend data is already available, implementing the UI visualization requires additional FXML layout work and GridPane management. This was prioritized after the Visual Themes System and has not been started yet.
 
 **Complexity**: Low - mainly UI work
-**Status**: Backend ready, frontend not implemented
+**Status**: Backend data available, frontend not implemented
 
 ### 2. Hold Piece Mechanism
 **Reason**: This feature would require significant changes to the game state management:
@@ -507,43 +569,66 @@ The following features were considered but not implemented due to time constrain
     - `BurlyWoodColorStrategy` (code 7)
     - `WhiteColorStrategy` (default/fallback)
 
+### Theme Package (`com.comp2042.ui.theme`)
+20. **`com.comp2042.ui.theme.Theme`** (interface)
+    - Interface defining the contract for visual themes
+    - Methods: `getStylesheet()`, `getColorPalette()`, `getThemeName()`
+    - Enables Strategy pattern for visual variations
+    
+21. **`com.comp2042.ui.theme.ThemeManager`**
+    - Singleton class managing the currently active theme
+    - Notifies UI when theme changes (Observer pattern)
+    - Provides global access point for theme state
+    
+22. **`com.comp2042.ui.theme.ClassicTheme`**
+    - Concrete implementation of the original visual style
+    - Default theme with standard colors and styling
+    
+23. **`com.comp2042.ui.theme.RetroTheme`**
+    - Concrete implementation of monochrome green Gameboy-style theme
+    - Nostalgic handheld console aesthetic
+    
+24. **`com.comp2042.ui.theme.NeonTheme`**
+    - Concrete implementation of high-contrast dark mode
+    - Glowing colors with intended dark background
+
 ### Board Package (`com.comp2042.game.board`)
-20. **`com.comp2042.game.board.Board`** (interface)
+25. **`com.comp2042.game.board.Board`** (interface)
     - Main board interface (extends all segregated interfaces)
     
-21. **`com.comp2042.game.board.MovableBoard`** (interface)
+26. **`com.comp2042.game.board.MovableBoard`** (interface)
     - Movement operations interface (ISP)
     
-22. **`com.comp2042.game.board.ClearableBoard`** (interface)
+27. **`com.comp2042.game.board.ClearableBoard`** (interface)
     - Row clearing operations interface (ISP)
     
-23. **`com.comp2042.game.board.SpawnableBoard`** (interface)
+28. **`com.comp2042.game.board.SpawnableBoard`** (interface)
     - Brick spawning operations interface (ISP)
     
-24. **`com.comp2042.game.board.ScorableBoard`** (interface)
+29. **`com.comp2042.game.board.ScorableBoard`** (interface)
     - Score access interface (ISP)
     
-25. **`com.comp2042.game.board.SimpleBoard`**
+30. **`com.comp2042.game.board.SimpleBoard`**
     - Concrete board implementation
     - Manages game state (brick position, board matrix, score)
     - Implements ghost piece calculation
 
 ### Bricks Package (`com.comp2042.game.bricks`)
-26. **`com.comp2042.game.bricks.Brick`** (interface)
+31. **`com.comp2042.game.bricks.Brick`** (interface)
     - Brick interface defining shape and color methods
     
-27. **`com.comp2042.game.bricks.BrickGenerator`** (interface)
+32. **`com.comp2042.game.bricks.BrickGenerator`** (interface)
     - Generator interface for producing bricks
     
-28. **`com.comp2042.game.bricks.BrickGeneratorFactory`**
+33. **`com.comp2042.game.bricks.BrickGeneratorFactory`**
     - Factory for creating brick generators
     - Decouples board from concrete generator
     
-29. **`com.comp2042.game.bricks.RandomBrickGenerator`**
+34. **`com.comp2042.game.bricks.RandomBrickGenerator`**
     - Random brick generation implementation
     - Manages current and next brick
     
-30-36. **Brick Implementations**:
+35-41. **Brick Implementations**:
     - `IBrick` (I-shaped tetromino)
     - `JBrick` (J-shaped tetromino)
     - `LBrick` (L-shaped tetromino)
@@ -553,16 +638,16 @@ The following features were considered but not implemented due to time constrain
     - `ZBrick` (Z-shaped tetromino)
 
 ### Controller Package (`com.comp2042.game.controller`)
-37. **`com.comp2042.game.controller.GameController`**
+42. **`com.comp2042.game.controller.GameController`**
     - Main game controller
     - Coordinates between board and UI
     - Event handling and game flow management
 
 ### Commands Package (`com.comp2042.game.controller.commands`)
-38. **`com.comp2042.game.controller.commands.MoveCommand`** (interface)
+43. **`com.comp2042.game.controller.commands.MoveCommand`** (interface)
     - Command interface for move operations
     
-39-43. **Command Implementations**:
+44-48. **Command Implementations**:
     - `LeftMoveCommand` - Move piece left
     - `RightMoveCommand` - Move piece right
     - `RotateMoveCommand` - Rotate piece
@@ -570,76 +655,76 @@ The following features were considered but not implemented due to time constrain
     - `HardDropMoveCommand` - Instant drop with bonus points
 
 ### Data Package (`com.comp2042.game.data`)
-44. **`com.comp2042.game.data.ViewData`**
+49. **`com.comp2042.game.data.ViewData`**
     - Immutable DTO for brick view information
     - Contains position (x, y), shape, ghost position
     
-45. **`com.comp2042.game.data.DownData`**
+50. **`com.comp2042.game.data.DownData`**
     - Immutable DTO for down move results
     - Contains moved status, cleared status, rows cleared
     
-46. **`com.comp2042.game.data.ClearRow`**
+51. **`com.comp2042.game.data.ClearRow`**
     - Immutable DTO for row clearing results
     - Contains removed row count and new board matrix
     
-47. **`com.comp2042.game.data.NextShapeInfo`**
+52. **`com.comp2042.game.data.NextShapeInfo`**
     - Immutable DTO for next piece preview data
 
 ### Events Package (`com.comp2042.game.events`)
-48. **`com.comp2042.game.events.InputEventListener`** (interface)
+53. **`com.comp2042.game.events.InputEventListener`** (interface)
     - Event listener interface for input events
     
-49. **`com.comp2042.game.events.MoveEvent`**
+54. **`com.comp2042.game.events.MoveEvent`**
     - Event object for move actions
     
-50. **`com.comp2042.game.events.EventType`** (enum)
+55. **`com.comp2042.game.events.EventType`** (enum)
     - Enumeration of event types (LEFT, RIGHT, UP, DOWN, HARD_DROP)
     
-51. **`com.comp2042.game.events.EventSource`** (enum)
+56. **`com.comp2042.game.events.EventSource`** (enum)
     - Enumeration of event sources (KEYBOARD, TIMER)
 
 ### Operations Package (`com.comp2042.game.operations`)
-52. **`com.comp2042.game.operations.MatrixOperations`**
+57. **`com.comp2042.game.operations.MatrixOperations`**
     - Utility class for matrix operations
     - Collision detection, merging, row clearing, copying
     
-53. **`com.comp2042.game.operations.BrickRotator`**
+58. **`com.comp2042.game.operations.BrickRotator`**
     - Handles brick rotation logic
     - Calculates next shape after rotation
 
 ### Score Package (`com.comp2042.game.score`)
-54. **`com.comp2042.game.score.Score`**
+59. **`com.comp2042.game.score.Score`**
     - Score management with JavaFX property
     - Observable score for UI binding
     
-55. **`com.comp2042.game.score.HighScoreManager`**
+60. **`com.comp2042.game.score.HighScoreManager`**
     - High score tracking and persistence
     - Automatic detection of new high scores
     - File I/O for saving/loading high scores
 
 ### Level Package (`com.comp2042.game.level`)
-56. **`com.comp2042.game.level.Level`**
+61. **`com.comp2042.game.level.Level`**
     - Immutable level configuration object
     - Contains level number, drop speed, score multiplier
     
-57. **`com.comp2042.game.level.LinesClearedTracker`**
+62. **`com.comp2042.game.level.LinesClearedTracker`**
     - Tracks total lines cleared
     - Observable property for reactive updates
     
-58. **`com.comp2042.game.level.LevelStrategy`** (interface)
+63. **`com.comp2042.game.level.LevelStrategy`** (interface)
     - Strategy interface for level configuration
     
-59. **`com.comp2042.game.level.DefaultLevelStrategy`**
+64. **`com.comp2042.game.level.DefaultLevelStrategy`**
     - Default implementation providing predefined levels
     - Defines 10 levels with increasing difficulty
     
-60. **`com.comp2042.game.level.LevelManager`**
+65. **`com.comp2042.game.level.LevelManager`**
     - Manages level progression
     - Updates level every 5 lines cleared
     - Provides current level configuration
 
 ### Test Classes
-61-95. **JUnit Test Suite** (`src/test/java/com/comp2042/`)
+66-100. **JUnit Test Suite** (`src/test/java/com/comp2042/`)
     - `MatrixOperationsTest`, `BrickRotatorTest`
     - `ScoreTest`, `HighScoreManagerTest`
     - All 7 brick tests (IBrickTest, JBrickTest, etc.)
@@ -654,7 +739,7 @@ The following features were considered but not implemented due to time constrain
     - `ColorStrategyRegistryTest` - Tests for strategy lookup and fallback behavior
     - All ColorStrategy implementation tests (9 strategy classes tested)
 
-**Total New Classes**: Over 95 Java files including source files and test files
+**Total New Classes**: Over 100 Java files including source files and test files (5 theme-related classes added)
 
 ---
 
@@ -679,7 +764,9 @@ The following features were considered but not implemented due to time constrain
      - **Visual Feedback Effects**: Added `triggerShockwaveEffect()` for board border flash on line clears
      - Added `triggerBrickBounceEffect()` and `applyBounceToMatrix()` for per-brick stroke animations
      - Updated `moveDown()` and `handleHardDrop()` to trigger visual effects when lines are cleared
-   - **Reason**: Enforce Single Responsibility Principle, improve testability, support new features, enhance visual presentation, and provide satisfying visual feedback
+     - **Theme System**: Added `initThemeHandling()` to listen for theme changes, swap CSS stylesheets dynamically, and trigger full board repaint
+     - Enables runtime visual theme switching without application restart
+   - **Reason**: Enforce Single Responsibility Principle, improve testability, support new features, enhance visual presentation, provide satisfying visual feedback, and enable dynamic theme switching
    
 2. **`com.comp2042.game.board.SimpleBoard`**
    - **Changes**:
@@ -766,15 +853,28 @@ The following features were considered but not implemented due to time constrain
       - Additional 20% width increase for better proportions
     - **Reason**: Better visibility and improved game window proportions
 
-11. **`com.comp2042.game.operations.MatrixOperations`**
+11. **`com.comp2042.ui.ColorMapper`**
+    - **Changes**:
+      - Refactored `getFillColor()` to delegate to `ThemeManager.getInstance().getCurrentTheme()` instead of static `ColorStrategyRegistry`
+      - Color selection now theme-aware and updates dynamically
+    - **Reason**: Enable brick colors to update based on selected theme for runtime theme switching
+
+12. **`com.comp2042.ui.InputHandler`**
+    - **Changes**:
+      - Added `onThemeToggleRequested` callback parameter
+      - Bound **T** key to theme toggle callback
+      - Captures user input for theme switching
+    - **Reason**: Enable user to switch themes during gameplay via keyboard input
+
+13. **`com.comp2042.game.operations.MatrixOperations`**
     - **Changes**: Minor cleanup, improved method documentation
     - **Reason**: Code maintainability
    
-12. **`com.comp2042.game.operations.BrickRotator`**
+14. **`com.comp2042.game.operations.BrickRotator`**
     - **Changes**: Enhanced documentation, maintained existing logic
     - **Reason**: Code clarity
 
-**Summary**: 12 files significantly modified, with changes driven by refactoring goals (SRP, DIP, ISP), new feature requirements (ghost piece, level system, hard drop, high score, visual feedback effects), and UI polish improvements.
+**Summary**: 14 files significantly modified, with changes driven by refactoring goals (SRP, DIP, ISP), new feature requirements (ghost piece, level system, hard drop, high score, visual feedback effects, theme system), and UI polish improvements.
 
 ---
 
@@ -979,9 +1079,9 @@ All of these problems were eventually resolved without compromising the code qua
 ## Project Statistics
 
 ### Code Metrics
-- **Total Java Files**: Over 95 files including source and test files
+- **Total Java Files**: Over 100 files including source and test files (added 5 theme system classes)
 - **Test Methods**: Comprehensive and growing test suite with 200+ test methods across 35+ test files
-- **Design Patterns Used**: 5 major patterns (Strategy, Factory, Command, Observer, Registry)
+- **Design Patterns Used**: 6 major patterns (Strategy, Factory, Command, Observer, Registry, Singleton)
 - **SOLID Principles Applied**: All 5 principles throughout codebase
 
 ### Development Timeline
@@ -1003,12 +1103,13 @@ All of these problems were eventually resolved without compromising the code qua
 - Ghost piece (semi-transparent preview, real-time updates)
 - High score tracking (persistent storage)
 - Visual feedback effects (shockwave flash and brick bounce on line clears)
+- Visual themes system (3 themes: Classic, Retro, Neon - switchable with T key)
 - Comprehensive test suite (200+ tests across 35+ files)
 
 ---
 
 ## Conclusion
 
-This project demonstrates application of SOLID principles and design patterns to transform a legacy codebase. The refactoring work has focused on improving code organization, maintainability, and extensibility while adding meaningful gameplay enhancements like the level system, ghost piece preview, hard drop functionality, high score tracking, and visual feedback effects.
+This project demonstrates application of SOLID principles and design patterns to transform a legacy codebase. The refactoring work has focused on improving code organization, maintainability, and extensibility while adding meaningful gameplay enhancements like the level system, ghost piece preview, hard drop functionality, high score tracking, visual feedback effects, and a robust visual themes system allowing runtime style switching.
 
 All implemented features so far are fully functional and tested. The codebase is well-organized and structured for maintainability. Several unexpected technical challenges have been encountered and resolved during development, particularly around UI responsiveness, test framework compatibility, and JavaFX threading requirements.

@@ -1,0 +1,30 @@
+.root {
+    -fx-background-color: #9bbc0f;
+}
+
+.gameBoard {
+    -fx-border-color: #0f380f;
+    -fx-border-width: 8px;
+    -fx-border-style: solid;
+    -fx-background-color: transparent;
+}
+
+.score-label {
+    -fx-font-family: "Digital";
+    -fx-font-size: 16px;
+    -fx-text-fill: #0f380f;
+}
+
+.gameOverStyle {
+    -fx-font-family: "Let's go Digital";
+    -fx-font-size: 28;
+    -fx-text-fill: #0f380f;
+    -fx-background-color: #8bac0f;
+    -fx-border-color: #0f380f;
+    -fx-border-width: 4px;
+}
+
+.game-over-overlay {
+    -fx-fill: rgba(15, 56, 15, 0.5);
+}
+

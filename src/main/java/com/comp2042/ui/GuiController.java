@@ -27,6 +27,8 @@ import com.comp2042.game.data.ViewData;
 import com.comp2042.game.data.DownData;
 import com.comp2042.game.level.LevelManager;
 import com.comp2042.game.score.HighScoreManager;
+import com.comp2042.ui.theme.Theme;
+import com.comp2042.ui.theme.ThemeManager;
 import javafx.beans.binding.Bindings;
 
 /**
@@ -131,9 +133,15 @@ public class GuiController implements Initializable {
     /** View model for game rendering operations */
     private final GameViewModel gameViewModel = new GameViewModel();
 
+    /** Cache of current board state for repainting during theme switches */
+    private int[][] currentBoardMatrix;
+    
+    /** Cache of current view data for repainting during theme switches */
+    private ViewData currentViewData;
+
     /**
      * Initializes the GUI controller when the FXML layout is loaded.
-     * Sets up fonts, focus handling, game timer, and visual effects.
+     * Sets up fonts, focus handling, game timer, visual effects, and theme handling.
      * 
      * @param location the location used to resolve relative paths (unused)
      * @param resources the resources used for localization (unused)
@@ -156,6 +164,42 @@ public class GuiController implements Initializable {
         reflection.setFraction(0.8);
         reflection.setTopOpacity(0.9);
         reflection.setTopOffset(-12);
+        
+        initThemeHandling();
+    }
+
+    /**
+     * Sets up the theme handling logic.
+     * Listens for theme changes to update stylesheets and repaint the game.
+     */
+    private void initThemeHandling() {
+        ThemeManager.getInstance().currentThemeProperty().addListener((obs, oldTheme, newTheme) -> {
+            if (newTheme != null && gamePanel.getScene() != null) {
+                // Update stylesheet
+                gamePanel.getScene().getStylesheets().clear();
+                String cssPath = getClass().getClassLoader().getResource(newTheme.getStylesheet()).toExternalForm();
+                gamePanel.getScene().getStylesheets().add(cssPath);
+                
+                // Update background color if needed (though mostly handled by CSS)
+                if (gameBoard != null) {
+                    // Force a layout pass or style update if needed
+                }
+                
+                // Repaint board and active piece with new theme colors
+                if (currentBoardMatrix != null) {
+                    refreshGameBackground(currentBoardMatrix);
+                }
+                if (currentViewData != null) {
+                    // Refresh brick also refreshes ghost pieces
+                    refreshBrick(currentViewData);
+                }
+                
+                // Show notification
+                NotificationPanel notificationPanel = new NotificationPanel("THEME: " + newTheme.getName().toUpperCase());
+                groupNotification.getChildren().add(notificationPanel);
+                notificationPanel.showScore(groupNotification.getChildren());
+            }
+        });
     }
 
     /**
@@ -167,6 +211,8 @@ public class GuiController implements Initializable {
      * @param brick the initial brick's view data
      */
     public void initGameView(int[][] boardMatrix, ViewData brick) {
+        this.currentBoardMatrix = boardMatrix;
+        this.currentViewData = brick;
         displayMatrix = new Rectangle[boardMatrix.length][boardMatrix[0].length];
         for (int i = 2; i < boardMatrix.length; i++) {
             for (int j = 0; j < boardMatrix[i].length; j++) {
@@ -231,6 +277,7 @@ public class GuiController implements Initializable {
      */
     private void refreshBrick(ViewData brick) {
         if (isPause.getValue() == Boolean.FALSE) {
+            this.currentViewData = brick;
             gameViewModel.positionBrickPanel(gamePanel, brickPanel, brick);
             gameViewModel.updateBrickRectangles(rectangles, brick);
             
@@ -271,6 +318,7 @@ public class GuiController implements Initializable {
      * @param board the 2D array representing the current board state
      */
     public void refreshGameBackground(int[][] board) {
+        this.currentBoardMatrix = board;
         gameViewModel.updateBoard(displayMatrix, board);
     }
 
@@ -288,6 +336,9 @@ public class GuiController implements Initializable {
             int linesCleared = 0;
             if (downData.getClearRow() != null && downData.getClearRow().getLinesRemoved() > 0) {
                 linesCleared = downData.getClearRow().getLinesRemoved();
+                // Update board matrix as lines were removed and blocks shifted
+                refreshGameBackground(downData.getClearRow().getNewMatrix());
+                
                 // Calculate final score with level multiplier for display
                 int baseScore = downData.getClearRow().getScoreBonus();
                 int finalScore = baseScore;
@@ -319,6 +370,9 @@ public class GuiController implements Initializable {
             int linesCleared = 0;
             if (downData.getClearRow() != null && downData.getClearRow().getLinesRemoved() > 0) {
                 linesCleared = downData.getClearRow().getLinesRemoved();
+                // Update board matrix as lines were removed and blocks shifted
+                refreshGameBackground(downData.getClearRow().getNewMatrix());
+                
                 // Calculate final score with level multiplier for display
                 int baseScore = downData.getClearRow().getScoreBonus();
                 int finalScore = baseScore;
@@ -358,6 +412,7 @@ public class GuiController implements Initializable {
                 () -> moveDown(new MoveEvent(EventType.DOWN, EventSource.USER)), // Down/S key - soft drop
                 this::handleHardDrop, // Space key - hard drop
                 this::togglePause, // P key - pause/resume
+                () -> ThemeManager.getInstance().cycleTheme(), // T key - cycle theme
                 this::refreshBrick // Refresh brick immediately after moves to fix latency
         );
     
