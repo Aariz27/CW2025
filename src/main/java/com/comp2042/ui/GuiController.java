@@ -653,6 +653,12 @@ public class GuiController implements Initializable {
         applyBounceToMatrix(rectangles);
     }
 
+    /**
+     * Applies a stroke bounce animation to all non-transparent rectangles in a matrix.
+     * Each rectangle's border pulses outward briefly using its fill color.
+     * 
+     * @param matrix the 2D array of rectangles to animate
+     */
     private void applyBounceToMatrix(Rectangle[][] matrix) {
         if (matrix == null) {
             return;
