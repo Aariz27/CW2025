@@ -1,5 +1,8 @@
 .root {
-    -fx-background-color: #9bbc0f;
+    -fx-background-image: url("retro_background.png");
+    -fx-background-size: cover;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
 }
 
 .nextBrick {
@@ -56,3 +59,7 @@
     -fx-fill: rgba(15, 56, 15, 0.5);
 }
 
+/* Overlay to darken playfield background for better ghost visibility */
+.board-overlay {
+    -fx-fill: rgba(0, 0, 0, 0.28);
+}

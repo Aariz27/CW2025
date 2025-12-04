@@ -224,6 +224,8 @@ public class GuiController implements Initializable {
                 gamePanel.getScene().getStylesheets().clear();
                 String cssPath = getClass().getClassLoader().getResource(newTheme.getStylesheet()).toExternalForm();
                 gamePanel.getScene().getStylesheets().add(cssPath);
+
+                applyBackgroundForTheme(newTheme);
                 
                 // Update background color if needed (though mostly handled by CSS)
                 if (gameBoard != null) {
@@ -245,6 +247,41 @@ public class GuiController implements Initializable {
                 notificationPanel.showScore(groupNotification.getChildren());
             }
         });
+    }
+
+    /**
+     * Applies the correct background image for the active theme by setting it directly
+     * on the scene root. This ensures the background updates immediately when cycling
+     * themes without relying on cached stylesheet state.
+     *
+     * @param theme the active theme
+     */
+    private void applyBackgroundForTheme(Theme theme) {
+        if (gamePanel == null || gamePanel.getScene() == null || gamePanel.getScene().getRoot() == null) {
+            return;
+        }
+
+        String bgFile = switch (theme.getName()) {
+            case "Classic" -> "classic_background.png";
+            case "Neon" -> "neon_background.png";
+            case "Retro" -> "retro_background.png";
+            default -> null;
+        };
+
+        if (bgFile == null) {
+            gamePanel.getScene().getRoot().setStyle("");
+            return;
+        }
+
+        var resource = getClass().getClassLoader().getResource(bgFile);
+        if (resource != null) {
+            String style = String.format(
+                "-fx-background-image: url('%s'); -fx-background-size: cover; -fx-background-repeat: no-repeat; -fx-background-position: center;",
+                resource.toExternalForm()
+            );
+            gamePanel.getScene().getRoot().setStyle(style);
+            gamePanel.getScene().getRoot().applyCss();
+        }
     }
 
     /**

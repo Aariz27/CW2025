@@ -12,7 +12,8 @@ import javafx.scene.paint.Paint;
  * by creating new ColorStrategy implementations without modifying this class.
  */
 public final class ColorMapper {
-    private static final double GHOST_OPACITY = 0.3;
+    // Increase ghost opacity by 50% for better visibility over bright backgrounds
+    private static final double GHOST_OPACITY = 0.75;
     
     private ColorMapper() {}
     

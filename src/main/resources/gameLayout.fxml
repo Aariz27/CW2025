@@ -9,6 +9,8 @@
 <?import java.net.URL?>
 <Pane fx:controller="com.comp2042.ui.GuiController"
       xmlns:fx="http://javafx.com/fxml">
+    <!-- Dim overlay to improve ghost visibility (sits above background, below bricks) -->
+    <Rectangle fx:id="boardOverlay" width="432" height="612" fill="TRANSPARENT" mouseTransparent="true" styleClass="board-overlay"/>
     <GridPane fx:id="ghostPanel" vgap="1" hgap="1"/>
     <GridPane fx:id="brickPanel" vgap="1" hgap="1"/>
     <BorderPane styleClass="gameBoard" fx:id="gameBoard">

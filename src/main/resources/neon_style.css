@@ -1,5 +1,8 @@
 .root {
-    -fx-background-color: #000000;
+    -fx-background-image: url("neon_background.png");
+    -fx-background-size: cover;
+    -fx-background-repeat: no-repeat;
+    -fx-background-position: center;
 }
 
 .nextBrick {
@@ -63,3 +66,7 @@
     -fx-border-width: 2px;
 }
 
+/* Overlay to darken playfield background for better ghost visibility */
+.board-overlay {
+    -fx-fill: rgba(0, 0, 0, 0.35);
+}
