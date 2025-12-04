@@ -30,10 +30,16 @@
     <Label fx:id="scoreLabel" text="Score: 0" layoutX="270" layoutY="12" styleClass="score-label"/>
     <Label fx:id="levelLabel" text="Level: 1" layoutX="270" layoutY="42" styleClass="score-label"/>
     <Label fx:id="highScoreLabel" text="High Score: 0" layoutX="270" layoutY="72" styleClass="score-label"/>
-    
+
+    <!-- Hold piece display -->
+    <Label text="Hold (C)" layoutX="270" layoutY="100" styleClass="holdBrickLabel"/>
+    <Pane fx:id="holdBrickContainer" layoutX="270" layoutY="130" prefWidth="120" prefHeight="120" styleClass="holdBrick">
+        <GridPane fx:id="holdBrickPanel" vgap="1" hgap="1" layoutX="10" layoutY="10"/>
+    </Pane>
+
     <!-- Next piece preview -->
-    <Label text="Next Piece" layoutX="270" layoutY="120" styleClass="nextBrickLabel"/>
-    <Pane fx:id="nextBrickContainer" layoutX="270" layoutY="150" prefWidth="120" prefHeight="120" styleClass="nextBrick">
+    <Label text="Next Piece" layoutX="270" layoutY="260" styleClass="nextBrickLabel"/>
+    <Pane fx:id="nextBrickContainer" layoutX="270" layoutY="290" prefWidth="120" prefHeight="120" styleClass="nextBrick">
         <GridPane fx:id="nextBrickPanel" vgap="1" hgap="1" layoutX="10" layoutY="10"/>
     </Pane>
 

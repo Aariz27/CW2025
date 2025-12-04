@@ -18,5 +18,8 @@ public enum EventType {
     ROTATE,
     
     /** Instantly drop the active brick to the lowest possible position */
-    HARD_DROP
+    HARD_DROP,
+
+    /** Hold/swap the current brick with the held brick */
+    HOLD
 }

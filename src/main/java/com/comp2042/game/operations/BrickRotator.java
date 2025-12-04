@@ -49,12 +49,21 @@ public class BrickRotator {
 
     /**
      * Sets a new brick and resets rotation to the initial position.
-     * 
+     *
      * @param brick the brick to set for rotation management
      */
     public void setBrick(Brick brick) {
         this.brick = brick;
         currentShape = 0;
+    }
+
+    /**
+     * Returns the currently managed brick.
+     *
+     * @return the current brick being managed
+     */
+    public Brick getBrick() {
+        return brick;
     }
 
 

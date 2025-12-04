@@ -102,7 +102,7 @@ public class GameController implements InputEventListener {
      * Handles hard drop event using Command pattern.
      * Instantly drops the piece to the ghost position (where it will land).
      * Awards 2 points per cell dropped and handles landing logic.
-     * 
+     *
      * @param event the move event
      * @return DownData containing clear row information and view data
      */
@@ -111,6 +111,23 @@ public class GameController implements InputEventListener {
         MoveCommand command = new HardDropMoveCommand(board, viewGuiController);
         command.execute();
         return ((HardDropMoveCommand) command).getDownData();
+    }
+
+    /**
+     * Handles hold event for swapping the current brick with the held brick.
+     * If no brick is held, stores the current brick and spawns a new one.
+     * If a brick is already held, swaps them.
+     *
+     * @param event the move event
+     * @return ViewData containing updated brick information after the hold operation
+     */
+    @Override
+    public ViewData onHoldEvent(MoveEvent event) {
+        if (board instanceof SimpleBoard simpleBoard) {
+            return simpleBoard.holdBrick();
+        }
+        // Fallback - return current view data if board doesn't support hold
+        return board.getViewData();
     }
     
     /**

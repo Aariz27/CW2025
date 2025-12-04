@@ -317,7 +317,36 @@ All dependencies are managed via Maven and automatically downloaded:
 
 ---
 
-### 9. Visual Themes System
+### 10. Hold Piece Mechanics
+**Description**: A strategic gameplay feature allowing players to store and swap the current falling piece with a held piece, adding tactical depth to piece placement decisions.
+
+**Features**:
+- **Hold Storage**: Players can store the current piece by pressing **C** key
+- **Piece Swapping**: If a piece is already held, pressing **C** swaps the current piece with the held piece
+- **Visual Display**: Held piece shown in a dedicated panel in the right sidebar above the "Next Piece" preview
+- **One-Time Use**: Each held piece can only be swapped once per spawn cycle
+- **Game State Preservation**: Hold state resets when starting a new game
+- **Theme Integration**: Hold piece preview colors update dynamically when switching themes
+
+**Implementation**:
+- **Backend Logic**: `SimpleBoard.holdBrick()` manages piece storage and swapping logic
+- **UI Integration**: `GuiController` renders held piece in dedicated `holdBrickPanel` with `holdBrickRectangles` array
+- **Input Handling**: **C** key mapped to `InputHandler.onHoldRequested` callback
+- **Data Transfer**: `ViewData` enhanced with `holdBrickData` field for rendering
+- **Event System**: New `HOLD` event type added to `EventType` enum and `InputEventListener` interface
+
+**Technical Details**:
+- `holdBrickContainer` Pane (120×120px) provides visual container for held piece
+- `holdBrickPanel` GridPane renders individual brick rectangles with proper positioning
+- "Hold (C)" label indicates the control key and purpose
+- Piece storage persists until swapped or new game starts
+- Supports all brick shapes with automatic layout adaptation
+
+**Design**: Adds strategic depth by allowing players to save useful pieces for later while managing immediate placement challenges. Particularly valuable for advanced Tetris players who want to optimize piece sequences.
+
+---
+
+### 11. Visual Themes System
 **Description**: A robust theming system using Strategy and Singleton patterns that allows players to switch between distinct visual styles during gameplay without affecting game mechanics or state.
 
 **Features**:

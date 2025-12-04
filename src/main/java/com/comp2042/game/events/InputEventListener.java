@@ -54,6 +54,14 @@ public interface InputEventListener {
     DownData onHardDropEvent(MoveEvent event);
 
     /**
+     * Handles holding/swapping of the active brick with the held brick.
+     *
+     * @param event the movement event containing source information
+     * @return updated view data for rendering after the hold operation
+     */
+    ViewData onHoldEvent(MoveEvent event);
+
+    /**
      * Creates and initializes a new game, resetting all state.
      */
     void createNewGame();

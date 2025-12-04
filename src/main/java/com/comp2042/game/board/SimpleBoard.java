@@ -34,6 +34,7 @@ public class SimpleBoard implements Board {
     private final LinesClearedTracker linesTracker;
     private final LevelManager levelManager;
     private final HighScoreManager highScoreManager;
+    private Brick heldBrick; // The brick currently held by the player
 
     /**
      * Creates a new SimpleBoard with the specified dimensions.
@@ -130,11 +131,13 @@ public class SimpleBoard implements Board {
         int currentX = (int) currentOffset.getX();
         int currentY = (int) currentOffset.getY();
         int ghostY = findDropY(currentX, currentY);
+        int[][] holdBrickData = heldBrick != null ? heldBrick.getShapeMatrix().get(0) : null;
         return new ViewData(
-            brickRotator.getCurrentShape(), 
-            currentX, 
-            currentY, 
+            brickRotator.getCurrentShape(),
+            currentX,
+            currentY,
             brickGenerator.getNextBrick().getShapeMatrix().get(0),
+            holdBrickData,
             currentX,  // ghostX matches current X
             ghostY
         );
@@ -213,6 +216,27 @@ public class SimpleBoard implements Board {
         linesTracker.reset();
         levelManager.reset();
         highScoreManager.resetNewHighScoreFlag();
+        heldBrick = null; // Clear held brick on new game
         trySpawnNewBrick();
+    }
+
+    @Override
+    public ViewData holdBrick() {
+        // Get the current brick before swapping
+        Brick currentBrick = brickRotator.getBrick();
+
+        if (heldBrick == null) {
+            // No brick held - store current brick and spawn new one
+            heldBrick = currentBrick;
+            trySpawnNewBrick();
+        } else {
+            // Brick already held - swap them
+            Brick tempBrick = heldBrick;
+            heldBrick = currentBrick;
+            brickRotator.setBrick(tempBrick);
+            currentOffset = new Point(4, 0); // Reset position to spawn point
+        }
+
+        return getViewData();
     }
 }

@@ -81,10 +81,18 @@ public class GuiController implements Initializable {
     /** Panel for displaying the next piece preview */
     @FXML
     private GridPane nextBrickPanel;
-    
+
     /** Container pane for the next brick preview */
     @FXML
     private Pane nextBrickContainer;
+
+    /** Panel for displaying the hold piece */
+    @FXML
+    private GridPane holdBrickPanel;
+
+    /** Container pane for the hold brick display */
+    @FXML
+    private Pane holdBrickContainer;
 
     /** Panel displayed when game is over */
     @FXML
@@ -129,6 +137,9 @@ public class GuiController implements Initializable {
     
     /** 2D array of rectangles representing the next piece preview */
     private Rectangle[][] nextBrickRectangles;
+
+    /** 2D array of rectangles representing the hold piece */
+    private Rectangle[][] holdBrickRectangles;
     
     /** Timer for automatic brick dropping */
     private GameTimer gameTimer;
@@ -299,9 +310,12 @@ public class GuiController implements Initializable {
             // Update ghost piece position and appearance
             positionGhostPanel(brick);
             updateGhostRectangles(brick);
-            
+
             // Update next brick preview
             updateNextBrickPreview(brick);
+
+            // Update hold brick preview
+            updateHoldBrickPreview(brick);
         }
     }
     
@@ -333,17 +347,17 @@ public class GuiController implements Initializable {
     /**
      * Initializes the next brick preview panel.
      * Creates rectangles to display the upcoming piece.
-     * 
+     *
      * @param brick the initial view data containing next brick information
      */
     private void initNextBrickPreview(ViewData brick) {
         if (brick.getNextBrickData() == null || brick.getNextBrickData().length == 0) {
             return;
         }
-        
+
         int[][] nextBrickData = brick.getNextBrickData();
         nextBrickRectangles = new Rectangle[nextBrickData.length][nextBrickData[0].length];
-        
+
         for (int i = 0; i < nextBrickData.length; i++) {
             for (int j = 0; j < nextBrickData[i].length; j++) {
                 Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
@@ -354,35 +368,121 @@ public class GuiController implements Initializable {
                 nextBrickPanel.add(rectangle, j, i);
             }
         }
+
+        // Initialize hold brick preview as well
+        initHoldBrickPreview(brick);
+    }
+
+    /**
+     * Initializes the hold brick preview panel.
+     * Creates rectangles to display the held piece (if any).
+     *
+     * @param brick the initial view data containing hold brick information
+     */
+    private void initHoldBrickPreview(ViewData brick) {
+        if (brick.getHoldBrickData() == null || brick.getHoldBrickData().length == 0) {
+            // No held brick - create empty grid to maintain layout
+            holdBrickRectangles = new Rectangle[4][4]; // Standard 4x4 grid
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 4; j++) {
+                    Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
+                    rectangle.setFill(Color.TRANSPARENT);
+                    rectangle.setArcHeight(9);
+                    rectangle.setArcWidth(9);
+                    holdBrickRectangles[i][j] = rectangle;
+                    holdBrickPanel.add(rectangle, j, i);
+                }
+            }
+            return;
+        }
+
+        int[][] holdBrickData = brick.getHoldBrickData();
+        holdBrickRectangles = new Rectangle[holdBrickData.length][holdBrickData[0].length];
+
+        for (int i = 0; i < holdBrickData.length; i++) {
+            for (int j = 0; j < holdBrickData[i].length; j++) {
+                Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
+                rectangle.setFill(ColorMapper.getFillColor(holdBrickData[i][j]));
+                rectangle.setArcHeight(9);
+                rectangle.setArcWidth(9);
+                holdBrickRectangles[i][j] = rectangle;
+                holdBrickPanel.add(rectangle, j, i);
+            }
+        }
     }
     
     /**
      * Updates the next brick preview display.
      * Called whenever a new piece spawns and the next piece changes.
-     * 
+     *
      * @param brick the view data containing updated next brick information
      */
     private void updateNextBrickPreview(ViewData brick) {
         if (brick.getNextBrickData() == null || nextBrickRectangles == null) {
             return;
         }
-        
+
         int[][] nextBrickData = brick.getNextBrickData();
-        
+
         // If the next brick shape changed size, reinitialize
-        if (nextBrickRectangles.length != nextBrickData.length || 
+        if (nextBrickRectangles.length != nextBrickData.length ||
             nextBrickRectangles[0].length != nextBrickData[0].length) {
             nextBrickPanel.getChildren().clear();
             initNextBrickPreview(brick);
             return;
         }
-        
+
         // Update colors
         for (int i = 0; i < nextBrickData.length; i++) {
             for (int j = 0; j < nextBrickData[i].length; j++) {
                 nextBrickRectangles[i][j].setFill(ColorMapper.getFillColor(nextBrickData[i][j]));
                 nextBrickRectangles[i][j].setArcHeight(9);
                 nextBrickRectangles[i][j].setArcWidth(9);
+            }
+        }
+    }
+
+    /**
+     * Updates the hold brick preview display.
+     * Called whenever the held brick changes (hold operation or new game).
+     *
+     * @param brick the view data containing updated hold brick information
+     */
+    private void updateHoldBrickPreview(ViewData brick) {
+        if (holdBrickRectangles == null) {
+            return;
+        }
+
+        int[][] holdBrickData = brick.getHoldBrickData();
+
+        // Clear existing rectangles
+        holdBrickPanel.getChildren().clear();
+
+        if (holdBrickData == null || holdBrickData.length == 0) {
+            // No held brick - create empty grid
+            holdBrickRectangles = new Rectangle[4][4];
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 4; j++) {
+                    Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
+                    rectangle.setFill(Color.TRANSPARENT);
+                    rectangle.setArcHeight(9);
+                    rectangle.setArcWidth(9);
+                    holdBrickRectangles[i][j] = rectangle;
+                    holdBrickPanel.add(rectangle, j, i);
+                }
+            }
+        } else {
+            // Held brick exists - recreate grid with correct dimensions
+            holdBrickRectangles = new Rectangle[holdBrickData.length][holdBrickData[0].length];
+            for (int i = 0; i < holdBrickData.length; i++) {
+                for (int j = 0; j < holdBrickData[i].length; j++) {
+                    Rectangle rectangle = new Rectangle(BRICK_SIZE, BRICK_SIZE);
+                    rectangle.setFill(ColorMapper.getFillColor(holdBrickData[i][j]));
+                    rectangle.setArcHeight(9);
+                    rectangle.setArcWidth(9);
+                    holdBrickRectangles[i][j] = rectangle;
+                    holdBrickPanel.add(rectangle, j, i);
+                }
             }
         }
     }
@@ -470,6 +570,18 @@ public class GuiController implements Initializable {
     }
 
     /**
+     * Handles hold piece event by swapping current piece with held piece.
+     * Called when player presses the hold key (C).
+     */
+    private void handleHold() {
+        if (isPause.getValue() == Boolean.FALSE) {
+            ViewData viewData = eventListener.onHoldEvent(new MoveEvent(EventType.HOLD, EventSource.USER));
+            refreshBrick(viewData);
+        }
+        gamePanel.requestFocus();
+    }
+
+    /**
      * Sets the input event listener and configures keyboard input handling.
      * Implements dependency injection pattern.
      * 
@@ -487,6 +599,7 @@ public class GuiController implements Initializable {
                 () -> moveDown(new MoveEvent(EventType.DOWN, EventSource.USER)), // Down/S key - soft drop
                 this::handleHardDrop, // Space key - hard drop
                 this::togglePause, // P key - pause/resume
+                this::handleHold, // C key - hold piece
                 () -> ThemeManager.getInstance().cycleTheme(), // T key - cycle theme
                 this::refreshBrick // Refresh brick immediately after moves to fix latency
         );

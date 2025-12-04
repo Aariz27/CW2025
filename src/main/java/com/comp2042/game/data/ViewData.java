@@ -15,24 +15,27 @@ public final class ViewData {
     private final int xPosition;
     private final int yPosition;
     private final int[][] nextBrickData;
+    private final int[][] holdBrickData;
     private final int ghostX;
     private final int ghostY;
 
     /**
      * Creates new view data with all rendering information.
-     * 
+     *
      * @param brickData 2D array representing the current brick's shape
      * @param xPosition x-coordinate of the brick on the board
      * @param yPosition y-coordinate of the brick on the board
      * @param nextBrickData 2D array representing the next brick's shape
+     * @param holdBrickData 2D array representing the held brick's shape (null if no held brick)
      * @param ghostX x-coordinate of the ghost brick (preview of landing position)
      * @param ghostY y-coordinate of the ghost brick (preview of landing position)
      */
-    public ViewData(int[][] brickData, int xPosition, int yPosition, int[][] nextBrickData, int ghostX, int ghostY) {
+    public ViewData(int[][] brickData, int xPosition, int yPosition, int[][] nextBrickData, int[][] holdBrickData, int ghostX, int ghostY) {
         this.brickData = brickData;
         this.xPosition = xPosition;
         this.yPosition = yPosition;
         this.nextBrickData = nextBrickData;
+        this.holdBrickData = holdBrickData;
         this.ghostX = ghostX;
         this.ghostY = ghostY;
     }
@@ -66,11 +69,20 @@ public final class ViewData {
 
     /**
      * Returns a defensive copy of the next brick's shape matrix.
-     * 
+     *
      * @return 2D array representing the next brick shape
      */
     public int[][] getNextBrickData() {
         return MatrixOperations.copy(nextBrickData);
+    }
+
+    /**
+     * Returns a defensive copy of the held brick's shape matrix.
+     *
+     * @return 2D array representing the held brick shape, or null if no brick is held
+     */
+    public int[][] getHoldBrickData() {
+        return holdBrickData != null ? MatrixOperations.copy(holdBrickData) : null;
     }
 
     /**
