@@ -4,6 +4,10 @@
 
 **Repository URL**: https://github.com/Aariz27/CW2025
 
+## Repository Activity
+- **Clone count**: 195 Git clones in ast 14 days
+- **Unique cloners**: 138 unique cloners in the last 14 days
+
 ---
 
 ## Compilation Instructions
